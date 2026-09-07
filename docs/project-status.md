@@ -191,18 +191,35 @@ Agreed decisions:
   point of action (остаток проверяется при обработке);
 - **Q3**: duplicates allowed, uniqueness on the request number only.
 
+## FR-9: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md`: BR-7, FR-9, EL-15…EL-18;
+OP-2 closed (implemented by FR-9: BR-6 + BR-7). Both orphan data categories from
+Section 2.1 now have producers: заявки (FR-8), per-store stock (FR-9).
+
+Agreed decisions:
+
+- **Q1**: re-processing a processed request → rejection «заявка уже обработана»;
+  developer's proposed status «в работе» rejected — identical behavior to «подана»,
+  and a rejection must not change entity state; lifecycle = «подана» → «обработана»;
+- **Q2**: **BR-7** accepted (quantity ≤ stock, anchored to processing); partial
+  fulfillment rejected for Phase 0 — needs an extra field + status; workaround exists
+  (new request for the available quantity); parked as extension candidate; status
+  «невозможно выполнить» rejected (impossibility = rejection, not a state);
+- **Q3**: atomicity accepted («все три изменения — все или ничего», becomes a
+  transaction at the DB phase); processing date recorded (A-3) — ML history;
+- completed at recording: store-existence check symmetric to product check
+  (store may be deleted via FR-4 between submission and processing) — motivates OP-1.
+
 ## Next step
 
-**FR-9** «обработать заявку (отпуск со склада в магазин)» — Mentor Mode, questions
-submitted 2026-09-07:
-
-- Q1: how the request is identified for processing (number; «заявка не найдена» mirror);
-  may an already-processed request be processed again (status «подана» as precondition)?
-- Q2: stock check at processing (BR-7 candidate: остаток ≥ количество заявки);
-  partial fulfillment — allowed or all-or-nothing rejection?
-- Q3: success = three changes in one operation (склад −N, магазин +N, статус →
-  «обработана»): must they happen all together or can the system end up mid-way?
-  (introduction to atomicity; also — фиксировать ли дату обработки, A-3).
+1. **OP-1 resolution** — the guard for FR-4 is now unblockable: formulate **BR-8**
+   (магазин может быть удалён, только если нет заявок со статусом «подана», ссылающихся
+   на него — developer drafts; open sub-question: what about processed requests —
+   store history preservation) and update FR-4 to reference it;
+2. → **FR-7** «просмотреть информацию о товарах по магазинам» — last original operation;
+   read-only template (as FR-6): what is shown per store (product names + quantities),
+   ordering (stores and products), empty cases (store without products, empty store list).
 
 ## Repository notes
 
