@@ -112,6 +112,13 @@ draft FR-2 text) were detected during the check and superseded by the canonical 
 Fix: sections 5–7 rebuilt to canonical accepted texts; EL-6…EL-8 in the table; Section 9
 (Open points) added. Lesson recorded: review the **full** diff content before every commit.
 
+Second occurrence, same day (commits `9ff8bf9`, `7cd613c`; repaired in `970da13`): EL-10/EL-11
+rows landed outside the EL table (dangling after FR-5/FR-6 sections), a bullet marker lost in
+Section 8. Root causes: (1) structural pre-commit check asserted row **presence**, not **order**;
+(2) the diff was piped through `grep '^[+-]'`, stripping context so misplacement was invisible.
+Strengthened check: order-aware scan (e.g. `awk` asserting EL-1…EL-n sequence inside Section 7)
+plus an **unfiltered** `git diff` read before every commit.
+
 ## FR-5: ACCEPTED (2026-09-07)
 
 Accepted package recorded in `docs/requirements.md`: BR-5, FR-5, EL-9, OP-2;
