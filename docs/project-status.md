@@ -63,10 +63,24 @@ Review notes (2026-09-07):
 
 Conscious trade-offs are recorded as EL-1…EL-5 in `docs/requirements.md` (Section 7, «Accepted elaborations»).
 
+## Global assumptions: ACCEPTED (2026-09-07)
+
+A-1 and A-2 accepted as proposed (canonical texts in `docs/requirements.md`, Section 3);
+FR-1 now references A-1. The term «складской список» is anchored in A-2: its meaning derives
+from the single-warehouse assumption, so no separate D-2 is introduced.
+
 ## Next step
 
-1. Agree global assumptions **A-1** (single actor — сотрудник отдела снабжения) and **A-2** (single warehouse; складской список) and the recording principle: FR texts reference assumptions by id (FR-1 becomes «Сотрудник отдела снабжения (A-1) вводит…»). Proposed A-1/A-2 texts submitted to the developer on 2026-09-07.
-2. → **FR-2** «удалить ненужный товар из складского списка» — Mentor Mode, mentor opens with clarifying questions.
+**FR-2** «удалить ненужный товар из складского списка» — in progress (Mentor Mode).
+Clarifying questions submitted 2026-09-07:
+
+- Q1: how the product to delete is identified (name as identifier, D-1, case-insensitive match);
+- Q2: behavior when no such product exists in the складской список;
+- Q3 (BR-3 candidate): is deletion allowed when the product's warehouse quantity is non-zero?
+
+Note: «ненужный» is the actor's judgment, not a system-checkable condition. Deletion semantics
+for historical data (hard vs soft delete) is deliberately deferred to the DB design phase —
+at Phase 0 the FR records only the observable behavior of the складской список.
 
 ## Repository notes
 
