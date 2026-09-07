@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-04
+Last updated: 2026-09-07
 
 ## Current phase
 
@@ -32,7 +32,9 @@ Primary source: `docs/source/ТРПО_КР.doc` (методические ука
 
 Discipline: original assignment requirements are kept **separate** from project extensions and future ideas. Nothing outside the методичка may be presented as an original requirement.
 
-## FR-1 status: final iteration
+## FR-1: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md` (Sections 4–7): D-1, BR-1, BR-2, FR-1 and elaborations EL-1…EL-5.
 
 Agreed decisions (Q1–Q11):
 
@@ -47,30 +49,26 @@ Agreed decisions (Q1–Q11):
 - **Q9/Q10**: normalization extracted into a single defined term (D-1), not a «function»;
 - **Q11**: comparison is **case-insensitive**; stored spelling = first entered (after trim).
 
-Accepted artifacts:
+Final accepted texts (canonical copy lives in `docs/requirements.md`):
 
-- **D-1** (definition; final name pending, suggestion: «Обработанное название»):
-  «Обработанное название — это введённое название без начальных и конечных пробелов».
-- **BR-1** (accepted):
-  «После удаления начальных и конечных пробелов название товара содержит хотя бы один символ»
-  (optional simplification: «Обработанное название (D-1) содержит хотя бы один символ»).
+- **D-1**: «Обработанное название — это введённое название без начальных и конечных пробелов».
+- **BR-1**: «Обработанное название (D-1) товара содержит хотя бы один символ».
+- **BR-2**: «Обработанное название (D-1) товара не совпадает (без учёта регистра) ни с одним названием товара из складского списка».
+- **FR-1**: «Сотрудник отдела снабжения вводит название товара. Введённое название обрабатывается согласно D-1. Если нарушается BR-1 или BR-2 — операция отклоняется: складской список не изменяется, выводится сообщение об ошибке, соответствующее нарушенному правилу. Если BR-1 и BR-2 выполняются — в складской список добавляется товар: его обработанное название (D-1) и количество, равное 0».
 
-Pending:
+Review notes (2026-09-07):
 
-- **BR-2** — **not yet accepted**. Current developer wording («Название товара совпадает с названием товаров из списка склада») has inverted polarity (describes the violation condition). Final form must be a holding condition, pattern:
-  «Обработанное название товара не совпадает (без учёта регистра) ни с одним названием товара из складского списка».
+- Actor «сотрудник склада» corrected to «сотрудник отдела снабжения» (assignment text; confirmed by developer).
+- Editorial: BR-1 recorded via the agreed simplified form + «товара» for self-sufficiency; D-1 word order normalized («без начальных и конечных пробелов»).
 
-Conscious trade-offs (mark as «Принятое уточнение» in requirements.md):
-
-- stored spelling = first entered (cosmetic inconsistency across products is possible);
-- all reject/error behavior is an elaboration of the assignment (the методичка does not describe error scenarios).
+Conscious trade-offs are recorded as EL-1…EL-5 in `docs/requirements.md` (Section 7, «Accepted elaborations»).
 
 ## Next step
 
-1. Developer submits the final FR-1 package: D-1 (final name), BR-2 (correct polarity, case-insensitivity stated in the rule text), FR-1 referencing BR-1, BR-2, D-1.
-2. On acceptance → fix recording principle (actor + single warehouse live in global assumptions referenced by all FRs) → **FR-2** «удалить ненужный товар из складского списка».
+1. Agree global assumptions **A-1** (single actor — сотрудник отдела снабжения) and **A-2** (single warehouse; складской список) and the recording principle: FR texts reference assumptions by id (FR-1 becomes «Сотрудник отдела снабжения (A-1) вводит…»). Proposed A-1/A-2 texts submitted to the developer on 2026-09-07.
+2. → **FR-2** «удалить ненужный товар из складского списка» — Mentor Mode, mentor opens with clarifying questions.
 
 ## Repository notes
 
-- Git: `main` @ `cd5d324`; `.github/` and `docs/` are still untracked (to be committed).
-- `docs/requirements.md` exists but is empty — to be filled from agreed FRs as FR-1…FR-7 are accepted.
+- 2026-09-07: FR-1 package committed (`docs: record accepted FR-1 package`); `docs/requirements.md` filled with accepted artifacts and grows as FR-2…FR-7 are accepted.
+- Earlier note about untracked `.github/`/`docs/` is obsolete: everything had already been committed in `8bae47d`; working tree was clean before this change.
