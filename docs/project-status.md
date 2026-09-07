@@ -119,6 +119,15 @@ Section 8. Root causes: (1) structural pre-commit check asserted row **presence*
 Strengthened check: order-aware scan (e.g. `awk` asserting EL-1…EL-n sequence inside Section 7)
 plus an **unfiltered** `git diff` read before every commit.
 
+Third occurrence (commit `ee4e6cc`, repaired in `f87a565`): the OP-1 closing-note edit reported
+success but landed out of order (new «Status: closed» lines placed before the «Заведено…»
+paragraph, old «Status: open» left in place). Two compounding factors: (1) the edit tool
+applied the change at an unexpected position despite an exact-looking match — verify the
+**file section itself** (`sed -n '/### OP-1/,/### OP-2/p'`) after touching narrative blocks;
+(2) the pre-commit diff read was misleading at the terminal's wrap width — wrapped context
+lines look like separate lines. Rule added: for every touched section, verify final file
+content directly (sed/awk), not only the diff rendering.
+
 ## FR-5: ACCEPTED (2026-09-07)
 
 Accepted package recorded in `docs/requirements.md`: BR-5, FR-5, EL-9, OP-2;
