@@ -157,17 +157,28 @@ clause grounds reconstructing the missing operations as **derived requirements**
 (FR-8+, separate shelf: traced to the assignment, not among the seven named operations,
 not extensions). FR-7 status → Deferred (blocked), stays reserved.
 
+## Derived-set planning: AGREED (2026-09-07)
+
+- Minimal set: **FR-8** (подать заявку) + **FR-9** (обработать заявку = отпуск
+  склад→магазин); «обработка» и «перемещение» merged into one operation; direct transfer
+  without заявка excluded (parked as future idea);
+- **A-3** accepted («Система имеет доступ к текущей дате»); «текущий год» = год подачи
+  заявки; no rollover/cleanup operation — old requests preserved, simply outside the
+  «текущий год» definition;
+- **EL-11**: заявка = single product (multi-line → extension candidate).
+
 ## Next step
 
-Derived-operations phase (FR-8+) — Mentor Mode, opened 2026-09-07:
+**FR-8** «подать заявку магазина» — Mentor Mode, questions submitted 2026-09-07:
 
-- Q1: for each orphan data category, what operations does it minimally need
-  (create/update/read)? Expected: per-store stock entry; заявка submission;
-  possibly заявка processing/отпуск со склада (unlocks OP-1, OP-2);
-- Q2: «заявки на текущий год» — time enters the domain: what is «текущий год»,
-  when does it roll over, is a заявка per store per year or per store per product;
-- Q3: minimal derived set vs comfortable set — discipline: no more than the domain
-  description + «Разработать» clause require.
+- Q1: заявка structure — fields incl. system-assigned number (first entity in the project
+  without a natural unique key — stores/products are keyed by name, requests are not)
+  and submission date (A-3);
+- Q2: validation set — BR-1 for both names, «магазин не найден» / «товар не найден»
+  mirrors, quantity rule (BR-6 candidate: positive integer); open sub-question: should
+  the requested quantity be capped by the current warehouse stock at submission time?
+- Q3: duplicates — two identical requests (same store+product) allowed? Expected:
+  yes (uniqueness lives on the request number only).
 
 ## Repository notes
 
