@@ -28,10 +28,32 @@ The assignment defines seven operations; agreed FR order:
 | FR-4 | «удалить ненужный магазин из списка» | **Accepted** |
 | FR-5 | «учесть поступление некоторого товара на склад» | **Accepted** |
 | FR-6 | «просмотреть информацию о товарах на складе» | **Accepted** |
-| FR-7 | «просмотреть информацию о товарах по магазинам» | Pending |
+| FR-7 | «просмотреть информацию о товарах по магазинам» | **Deferred** (blocked: no data-producing operation) |
 
 Note: store requests («заявки магазинов на текущий год») appear in the assignment's domain
 description but are not among the seven operations — to be discussed separately after FR-7.
+
+### 2.1 Domain data categories vs producing operations (source-grounded gap analysis)
+
+Domain description (verbatim, Тема 4): «Отдел снабжения в каждый момент времени должен
+иметь точные данные о названии товаров, их количестве на складе, о названии магазинов,
+о названии и количестве каждого вида товара в каждом магазине, о заявках магазинов
+на текущий год».
+
+| Data category (domain) | Produced/updated by |
+|------------------------|---------------------|
+| product names, warehouse quantity | FR-1, FR-2, FR-5 |
+| store names | FR-3, FR-4 |
+| product name + quantity per store | **none of the seven operations** |
+| store requests (заявки) for the current year | **none of the seven operations** |
+
+The assignment is internally incomplete: two required data categories have no creating
+operation. The «Разработать» tail («модули ввода, изменения и просмотра данных») grounds
+the reconstruction of the missing operations. They will be recorded as **derived
+requirements** (FR-8+): traced to the assignment text, but not among the seven named
+operations — kept separate from both original requirements and project extensions.
+FR-7 stays reserved for its operation and is deferred until the derived operations
+are accepted.
 
 ## 3. Global assumptions (A)
 

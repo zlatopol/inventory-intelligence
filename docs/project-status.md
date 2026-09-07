@@ -143,16 +143,31 @@ Agreed decisions:
 - **Q2**: new **read-only template** correctly identified by the developer: no input (BR-1 n/a), no rejection branches, empty складской список = valid state with empty result, not an error;
 - **Q3**: receipt-time ordering rejected (non-existent + ambiguous attribute, «интересно» is not a requirement); deterministic ordering chosen: alphabetical by processed name, case-insensitive (EL-10) — BR-2 uniqueness guarantees a total order with no ties.
 
+## FR-7 planning decision (2026-09-07): DEFERRED — derived-operations phase opened
+
+Developer's answers: Q1 — no accepted operation links товар↔магазин (correct);
+Q2 — FR-7 cannot be completed without заявки and the product-store link (correct);
+Q3 — option (а): formalize заявки/выдача first, then FR-7 (accepted).
+
+Source grounding (методичка, Тема 4, extracted via `textutil`): the domain description
+requires **four** data categories; two of them (per-store product name+quantity,
+заявки на текущий год) are produced by **none** of the seven operations — the assignment
+is internally incomplete. The «Разработать: модули ввода, изменения и просмотра данных»
+clause grounds reconstructing the missing operations as **derived requirements**
+(FR-8+, separate shelf: traced to the assignment, not among the seven named operations,
+not extensions). FR-7 status → Deferred (blocked), stays reserved.
+
 ## Next step
 
-**FR-7** «просмотреть информацию о товарах по магазинам» — Mentor Mode, questions
-submitted 2026-09-07. This is the planned «заявки после FR-7» checkpoint:
+Derived-operations phase (FR-8+) — Mentor Mode, opened 2026-09-07:
 
-- Q1: data inventory — which of FR-1…FR-6 links a конкретный товар to a конкретный магазин? (expected discovery: none; a store has only a name);
-- Q2: where per-store product data could come from in the domain description (заявки, отпуск со склада в магазин) → can FR-7 be completed before requests/выдача are formalized at all?
-- Q3: planning decision — (а) formalize заявки/выдача first (they are in the assignment's domain description — not an invention), then FR-7; (б) record FR-7 as a stub + open point; (в) developer's own option. With justification.
-
-Note: FR-7 is expected to trigger the store-request formalization work (OP-1, OP-2 depend on it).
+- Q1: for each orphan data category, what operations does it minimally need
+  (create/update/read)? Expected: per-store stock entry; заявка submission;
+  possibly заявка processing/отпуск со склада (unlocks OP-1, OP-2);
+- Q2: «заявки на текущий год» — time enters the domain: what is «текущий год»,
+  when does it roll over, is a заявка per store per year or per store per product;
+- Q3: minimal derived set vs comfortable set — discipline: no more than the domain
+  description + «Разработать» clause require.
 
 ## Repository notes
 
