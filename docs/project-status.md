@@ -4,9 +4,13 @@ Last updated: 2026-09-07
 
 ## Current phase
 
-**Phase 0 — Requirements formalization** (in progress).
+**Phase 1 — Design** (opening).
 
-Scope of Phase 0: only **Original Assignment Requirements**. No PostgreSQL, SQLAlchemy, FastAPI, Docker, ML, DB tables, architecture, or API design at this stage.
+**Phase 0 — Requirements formalization: COMPLETE (2026-09-07).** All 10 operations
+accepted (7 original + 3 derived), 8 BR, 3 A, 1 D, 21 EL, both OP closed; integrity
+check passed. Historical scope note: Phase 0 covered original + derived assignment
+requirements only — no PostgreSQL, SQLAlchemy, FastAPI, Docker, ML, DB tables,
+architecture, or API design.
 
 ## Process (agreed)
 
@@ -266,13 +270,38 @@ Mechanical consistency pass over `docs/requirements.md`:
   terms; two «его количество» anaphora cases with in-sentence antecedents — acceptable);
 - EL-1…EL-21 ordered; Section 2/2.1 tables consistent; typo scan clean.
 
-## Next step (updated)
+## Phase 0 retrospective (2026-09-07)
 
-1. **Phase 0 retrospective** — developer questions: key decisions list; what would be
-   done differently in FR-1 now; which artifact types (A/D/BR/FR/EL/OP) proved useful;
-2. **Phase 1 preview** — design: modular-monolith architecture outline, first DB schema
-   sketch (entities already named by requirements), first vertical slice candidate;
-3. then Phase 0 header → complete, `docs/architecture.md`/`database.md` started.
+Developer's answers + mentor commentary:
+
+- **R1 (key decisions)**: developer — name identity (D-1 + case-insensitive uniqueness),
+  deletion semantics (guards + history preservation), integer quantities. Mentor adds
+  process picks: the A/D/BR/FR artifact separation (a rule lives once, FRs reference it),
+  the derived-requirements shelf (Section 2.1, source-grounded gap analysis), and the OP
+  mechanism (decisions deferred explicitly, never silently);
+- **R2 (FR-1 again?)**: «кардинально ничего — последовательные вопросы и были обучением».
+  Half-agreed: the process stays; what changed is the developer's toolkit — the 4-slot
+  template checklist, holding-condition polarity, requirements/design/UX level
+  separation. Evidence: FR-1 took 11 question rounds, FR-7 one pass;
+- **R3 (artifact value)**: most useful — developer: FR; mentor: BR/D/A (reference counts:
+  D-1 ×14, A-1 ×10, BR-1 ×9 — the smallest artifacts had the highest reuse; BR-2 alone
+  provided FR-6's total order). Most expensive — developer: EL (agreed: 21 rows of
+  append-only narrative needing trace discipline; the point: it is the audit trail of
+  every decision beyond the методичка — interview capital); empirical runner-up:
+  the FR section (all three structure incidents landed there).
+
+## Next step
+
+**Phase 1 — Design** kickoff:
+
+1. `docs/architecture.md` — modular monolith outline (API / Service / Repository /
+   PostgreSQL), vertical-slice plan mapped to FR-1…FR-10;
+2. `docs/database.md` + first schema sketch (Alembic comes with code): entities and
+   attributes already named by requirements (товар: название, количество на складе;
+   магазин: название; заявка: номер, статус, даты, магазин, товар, количество;
+   количество товара в магазине). Open design decisions: hard vs soft delete
+   (history/ML), case-insensitive unique indexes, request-number generation;
+3. first vertical slice candidate: product (FR-1/FR-2/FR-5/FR-6) end-to-end.
 
 ## Repository notes
 

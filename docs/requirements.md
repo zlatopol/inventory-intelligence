@@ -1,7 +1,8 @@
 # Requirements
 
-> Phase 0 — requirements formalization (artifacts complete; integrity check passed
-> 2026-09-07; phase wrap-up in progress: retrospective + Phase 1 preview).
+> Phase 0 — requirements formalization (**complete**, 2026-09-07: 10 FR, 8 BR, 3 A,
+> 1 D, 21 EL, 2 closed OP; integrity check passed). Phase 1 (design) opened —
+> see docs/project-status.md.
 > Artifacts are recorded here as they are accepted. Normative texts (A, D, BR, FR) are kept
 > in Russian — the language of the source assignment. Document scaffolding is in English.
 
