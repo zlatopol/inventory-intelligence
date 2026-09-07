@@ -81,15 +81,24 @@ Agreed decisions:
 - «ненужный» = actor's judgment, not a system-checkable condition (note under FR-2);
 - hard vs soft delete (historical data) deliberately deferred to the DB design phase.
 
+## FR-3: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md`: BR-1 (edition 2 — generalized),
+BR-4, FR-3.
+
+Agreed decisions:
+
+- **Q1**: store input = name only; further attributes are not required by the методичка (future ideas, not promises);
+- **Q2**: BR-1 generalized to all names (edition 2; D-1 was already entity-free); BR-2 kept product-specific, mirror rule **BR-4** introduced for stores — semantic shared, scope local, survives a third named entity;
+- **Q3**: no counter analogue for stores — store↔product links arise from other operations; a store is added with its name only;
+- two copy-paste slips caught at review («название товара» in the input branch; «BR-1 и BR-2» in the success branch) — mechanical, fixed during recording with developer's consent pattern; lesson recorded: template-slot checklist (entity, rule ids, list name) when cloning an FR.
+
 ## Next step
 
-**FR-3** «включить новый магазин в список магазинов» — Mentor Mode, clarifying questions
-submitted 2026-09-07:
+**FR-4** «удалить ненужный магазин из списка» — Mentor Mode, opened 2026-09-07:
 
-- Q1: what input FR-3 takes (store attributes; trace to what the system later needs
-  from a store — store requests, FR-7 — without inventing requirements);
-- Q2: name rules for stores — generalize BR-1/BR-2 or introduce store-specific rules;
-- Q3: what is added to the store list on success (note: no quantity counterpart here).
+- **Q1 (draft exercise)**: developer drafts the complete FR-4 by analogy with FR-2 (A-1, D-1, BR-1 first, direct search, «не найден» → rejection, mirror postcondition) using the template-slot checklist;
+- **Q2 (substantive)**: does store deletion need a guard rule (BR-3 analogue)? Open dependency: «заявки магазинов на текущий год» exist in the domain description but are scheduled for formalization after FR-7. Options: record FR-4 without a guard + an explicit open point, or formulate the guard now.
 
 ## Repository notes
 
