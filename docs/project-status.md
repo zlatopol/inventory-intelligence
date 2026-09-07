@@ -320,18 +320,35 @@ Design Q&A (mentor questions → developer answers → decisions):
   accepted (ADR-0002) with an explicit revisit trigger (>8–10 files per layer folder
   / second developer).
 
+## Database design: DONE (2026-09-07) — spawned OP-3
+
+`docs/database.md` (schema v1) + `ADR-0005` created. Design Q&A:
+
+- **Q1 keys**: surrogate ids everywhere (developer) + unique business `number`
+  for заявка (sequence; Postgres allows one identity column per table — hence an
+  explicit `store_request_number_seq`);
+- **Q2 store_product**: (store_id, product_id) composite PK + quantity;
+  `CHECK (quantity > 0)` per FR-7 (zero row cannot exist; developer's «0 логичнее»
+  instinct parked in future ideas); PK leading column serves FR-7 grouping;
+- **Q3 references**: option (в) — plain FK (RESTRICT) + soft delete, no snapshots;
+- **Q4 deletion**: soft delete for product and store (ADR-0005); partial unique
+  indexes over live rows; the two soft-delete taxes documented;
+- notable invariants: cross-column CHECK on store_request
+  (status ⇔ processed_at), BR-8-serving partial index on pending requests.
+
+**Design-review discovery → OP-3** (requirements gap): BR-3 ignores per-store
+quantities — a product can be soft-deleted while stores still hold it. FR-7
+semantics for such rows depend on the resolution.
+
 ## Next step (updated)
 
-**`docs/database.md`** — schema design discussion (Mentor Mode), questions to open:
-
-- Q1: surrogate PK (id) vs natural key (name) — and what `lower(name)` unique index
-  means for both;
-- Q2: where per-store product quantities live (junction table store_product?), and
-  why FR-7's read pattern matters for its shape;
-- Q3: заявка table — number generation (sequence vs max+1 under ADR «uniqueness only»),
-  status domain, store/product references after deletion (inert history, EL-19);
-- Q4: hard vs soft delete for products/stores (BR-3/BR-8 guards + ML history interest);
-- Q5: integrity last line — CHECK (quantity >= 0), FK behavior, timestamps.
+1. **Resolve OP-3** (Mentor Mode): (i) extend BR-3 («и ни в одном магазине нет этого
+   товара») vs (ii) keep — stores display physical reality incl. deleted products;
+   then update requirements + database notes accordingly;
+2. **Project scaffold**: pyproject, app/ domain-first skeleton (ADR-0002 ред. 2),
+   Docker Compose (PostgreSQL), Alembic init;
+3. **Slice 1 (products)**: migration 0001 → model → repository → service → API →
+   tests (FR-1, FR-2, FR-5, FR-6).
 
 ## Repository notes
 
