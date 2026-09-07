@@ -211,15 +211,35 @@ Agreed decisions:
 - completed at recording: store-existence check symmetric to product check
   (store may be deleted via FR-4 between submission and processing) — motivates OP-1.
 
+## OP-1 + FR-10: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md`: BR-8, FR-4 (updated to reference
+BR-8), FR-10, EL-19…EL-20. Both open points are now closed (OP-1 here, OP-2 at FR-9).
+
+Agreed decisions:
+
+- **Q1 → BR-8**: developer's draft had correct holding-condition polarity; anchored to
+  the deletion operation (BR-3 pattern) + grammar fixes («ни одной», «со статусом»);
+- **Q2**: guard scope = only «подана» requests — guarding on all requests would kill
+  the deletion operation (any store with history undeletable); processed requests
+  referencing a deleted store are inert (FR-9 status precondition) and readable
+  (the заявка carries the store name) — the hanging reference is not observable
+  as breakage;
+- **Q3 → FR-10**: accepted on the strongest possible argument — operational necessity
+  (FR-9 input is a request number; without a view the system is unusable) + «модули
+  просмотра» trace; mechanical completion by the FR-6 read-only template (fields as
+  recorded by FR-8/FR-9, ordering by unique number, empty list valid); shows all
+  years, year filter = future refinement (EL-20).
+
 ## Next step
 
-1. **OP-1 resolution** — the guard for FR-4 is now unblockable: formulate **BR-8**
-   (магазин может быть удалён, только если нет заявок со статусом «подана», ссылающихся
-   на него — developer drafts; open sub-question: what about processed requests —
-   store history preservation) and update FR-4 to reference it;
-2. → **FR-7** «просмотреть информацию о товарах по магазинам» — last original operation;
-   read-only template (as FR-6): what is shown per store (product names + quantities),
-   ordering (stores and products), empty cases (store without products, empty store list).
+**FR-7** «просмотреть информацию о товарах по магазинам» — the last original operation;
+unblocked (per-store quantities exist since FR-9). Capstone drafting exercise: developer
+writes the complete FR-7 alone (read-only template as FR-6/FR-10), with one new structural
+wrinkle — grouping: display is per store (store → its products + quantities). Slots to
+resolve: grouping structure, ordering of stores (BR-4 uniqueness → alphabetical total
+order) and products within a store (BR-2 → alphabetical), empty cases (store without
+products, empty store list). Then Phase 0 wrap-up checklist.
 
 ## Repository notes
 
