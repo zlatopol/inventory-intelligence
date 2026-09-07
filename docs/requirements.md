@@ -28,7 +28,7 @@ The assignment defines seven operations; agreed FR order:
 | FR-4 | «удалить ненужный магазин из списка» | **Accepted** |
 | FR-5 | «учесть поступление некоторого товара на склад» | **Accepted** |
 | FR-6 | «просмотреть информацию о товарах на складе» | **Accepted** |
-| FR-7 | «просмотреть информацию о товарах по магазинам» | **Deferred** (blocked: no data-producing operation) |
+| FR-7 | «просмотреть информацию о товарах по магазинам» | **Accepted** |
 
 Note: store requests («заявки магазинов на текущий год») appear in the assignment's domain
 description but are not among the seven operations — to be discussed separately after FR-7.
@@ -227,6 +227,26 @@ Original wording: «просмотреть информацию о товара�
 Примечание: операция не изменяет складской список, не имеет ввода и веток отказа;
 пустой складской список — допустимое состояние (не ошибка).
 
+### FR-7. Просмотреть информацию о товарах по магазинам
+
+Original wording: «просмотреть информацию о товарах по магазинам».
+
+«Сотрудник отдела снабжения (A-1) просматривает информацию о товарах по магазинам.
+Для каждого магазина из списка магазинов отображаются его название и товары:
+для каждого товара — его обработанное название (D-1) и количество товара
+в магазине. Товары отображаются в порядке алфавита по обработанному названию
+(без учёта регистра); магазины — в порядке алфавита по названию (без учёта
+регистра). Если у магазина нет товаров, магазин отображается с пустым списком
+товаров; если список магазинов пуст, отображается пустой результат; это не
+является ошибкой».
+
+Примечания: операция не изменяет данные, не имеет ввода и веток отказа.
+Внутри одного магазина товар встречается не более одного раза (единственность
+наследуется от складского списка, BR-2), поэтому алфавитный порядок товаров —
+полный; порядок магазинов полный по BR-4. Количества товара в магазине всегда
+больше нуля (уменьшения количества в магазине не предусмотрено ни одной
+операцией).
+
 ### FR-8. Подать заявку магазина
 
 Derived operation (Section 2.1): домен требует «иметь точные данные о заявках магазинов
@@ -320,6 +340,7 @@ Decisions that go beyond the explicit text of the методичка (agreed dur
 | EL-18 | New operational failures: «заявка не найдена», «заявка уже обработана», «магазин/товар заявки не найден» — own error message each, data unchanged | FR-9, Q1 |
 | EL-19 | FR-4 guard (BR-8) blocks deletion only on «подана» requests: guarding on all requests would make store deletion practically impossible; processed requests keep referencing the deleted store — the store name is recorded in the заявка (inert history, displayable by FR-10) | OP-1, Q1–Q2 |
 | EL-20 | FR-10 displays all requests incl. past years; year filtering is a future refinement; ordering by unique request number; fields exactly as recorded by FR-8/FR-9 | FR-10, Q3 |
+| EL-21 | FR-7 display: two-level deterministic ordering (stores by name — BR-4 total order; products within a store — uniqueness inherited from the warehouse list, BR-2); a store without products is displayed with an empty product list, not hidden; per-store quantities are always > 0 (no operation decreases them) | FR-7 |
 
 ## 8. Project extensions and future ideas
 Project extensions: none implemented yet.

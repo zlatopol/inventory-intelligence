@@ -240,15 +240,33 @@ Agreed decisions:
   recorded by FR-8/FR-9, ordering by unique number, empty list valid); shows all
   years, year filter = future refinement (EL-20).
 
+## FR-7: ACCEPTED (2026-09-07) — all 10 operations accepted
+
+Accepted package recorded in `docs/requirements.md`: FR-7, EL-21.
+
+- **Capstone assessment**: all substantive slots resolved correctly on the first draft
+  (composition incl. every store; two-level alphabetical ordering with the right
+  uniqueness arguments — BR-4 for stores, inheritance from BR-2 within a store;
+  both empty cases with correct semantics: store-with-no-products displayed,
+  empty store list = empty result, not an error);
+- completed at recording (mechanical): «количество товара в магазине» terminology
+  (FR-9 term), «без учёта регистра» for both orderings, explicit store-name group
+  header, grammar, read-only примечание, zero-quantity impossibility note;
+- growth reference: FR-1 took 11 question rounds; FR-7 — one round + mechanical edits.
+
 ## Next step
 
-**FR-7** «просмотреть информацию о товарах по магазинам» — the last original operation;
-unblocked (per-store quantities exist since FR-9). Capstone drafting exercise: developer
-writes the complete FR-7 alone (read-only template as FR-6/FR-10), with one new structural
-wrinkle — grouping: display is per store (store → its products + quantities). Slots to
-resolve: grouping structure, ordering of stores (BR-4 uniqueness → alphabetical total
-order) and products within a store (BR-2 → alphabetical), empty cases (store without
-products, empty store list). Then Phase 0 wrap-up checklist.
+**Phase 0 wrap-up checklist** — final consistency pass before closing the phase:
+
+1. cross-reference check: every FR references existing artifacts (A/D/BR ids), every
+   BR is referenced by at least one FR;
+2. status consistency: 10 FR accepted, no Pending/Deferred left; both OP closed;
+3. terminology consistency: «количество товара на складе / в магазине / поступления /
+   запрашиваемого товара» used uniformly;
+4. EL table complete, ordered, traces correct; Section 2/2.1 tables consistent;
+5. header note «Phase 0 — in progress» → complete after the pass;
+6. Phase 0 retrospective (what was learned, decision log summary) in project-status.md;
+7. preview of Phase 1 (design: architecture, DB schema, first vertical slice).
 
 ## Repository notes
 
