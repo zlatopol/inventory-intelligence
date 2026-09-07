@@ -303,6 +303,36 @@ Developer's answers + mentor commentary:
    (history/ML), case-insensitive unique indexes, request-number generation;
 3. first vertical slice candidate: product (FR-1/FR-2/FR-5/FR-6) end-to-end.
 
+## Architecture doc + ADRs: DONE (2026-09-07)
+
+`docs/architecture.md` (draft v1) + `docs/decisions/ADR-0001…0004` created.
+
+Design Q&A (mentor questions → developer answers → decisions):
+
+- **Q1 transaction owner**: developer — Service («business logic, not a single SQL
+  query»); accepted, reasoning completed: a transaction is a property of a use case,
+  FR-9 spans three aggregates, no single repository owns them → **ADR-0003**;
+- **Q2 BR-2 guard**: developer proposed all three layers; refined to **service +
+  DB unique index** (ADR-0004): the repository pre-SELECT is racy duplication; the
+  index is the only guarantee; the repository translates `UniqueViolation` into the
+  same domain error — two sources, one outcome;
+- **Q3 packaging**: developer chose **layer-first** for readability at this scale —
+  accepted (ADR-0002) with an explicit revisit trigger (>8–10 files per layer folder
+  / second developer).
+
+## Next step (updated)
+
+**`docs/database.md`** — schema design discussion (Mentor Mode), questions to open:
+
+- Q1: surrogate PK (id) vs natural key (name) — and what `lower(name)` unique index
+  means for both;
+- Q2: where per-store product quantities live (junction table store_product?), and
+  why FR-7's read pattern matters for its shape;
+- Q3: заявка table — number generation (sequence vs max+1 under ADR «uniqueness only»),
+  status domain, store/product references after deletion (inert history, EL-19);
+- Q4: hard vs soft delete for products/stores (BR-3/BR-8 guards + ML history interest);
+- Q5: integrity last line — CHECK (quantity >= 0), FK behavior, timestamps.
+
 ## Repository notes
 
 - 2026-09-07: FR-1 package committed (`docs: record accepted FR-1 package`); `docs/requirements.md` filled with accepted artifacts and grows as FR-2…FR-7 are accepted.
