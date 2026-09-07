@@ -174,18 +174,35 @@ not extensions). FR-7 status → Deferred (blocked), stays reserved.
   «текущий год» definition;
 - **EL-11**: заявка = single product (multi-line → extension candidate).
 
+## FR-8: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md`: BR-6, FR-8, EL-12…EL-14.
+
+Agreed decisions:
+
+- **Q1**: request fields = system-assigned unique number (invariant only — continuity
+  explicitly not required, «+1 от 1» is an implementation detail for the DB phase;
+  «ключ» avoided as DB terminology at requirements level) + submission date (A-3,
+  system, not the actor) + store + product + requested quantity + **status**
+  (missed by the developer in the draft, introduced at review: «подана» — the same
+  creation-sets-initial-state pattern as FR-1's quantity 0);
+- **Q2**: BR-6 = positive integer (developer's wording accepted verbatim); mirrors
+  «магазин не найден»/«товар не найден»; no stock cap at submission — validation at the
+  point of action (остаток проверяется при обработке);
+- **Q3**: duplicates allowed, uniqueness on the request number only.
+
 ## Next step
 
-**FR-8** «подать заявку магазина» — Mentor Mode, questions submitted 2026-09-07:
+**FR-9** «обработать заявку (отпуск со склада в магазин)» — Mentor Mode, questions
+submitted 2026-09-07:
 
-- Q1: заявка structure — fields incl. system-assigned number (first entity in the project
-  without a natural unique key — stores/products are keyed by name, requests are not)
-  and submission date (A-3);
-- Q2: validation set — BR-1 for both names, «магазин не найден» / «товар не найден»
-  mirrors, quantity rule (BR-6 candidate: positive integer); open sub-question: should
-  the requested quantity be capped by the current warehouse stock at submission time?
-- Q3: duplicates — two identical requests (same store+product) allowed? Expected:
-  yes (uniqueness lives on the request number only).
+- Q1: how the request is identified for processing (number; «заявка не найдена» mirror);
+  may an already-processed request be processed again (status «подана» as precondition)?
+- Q2: stock check at processing (BR-7 candidate: остаток ≥ количество заявки);
+  partial fulfillment — allowed or all-or-nothing rejection?
+- Q3: success = three changes in one operation (склад −N, магазин +N, статус →
+  «обработана»): must they happen all together or can the system end up mid-way?
+  (introduction to atomicity; also — фиксировать ли дату обработки, A-3).
 
 ## Repository notes
 

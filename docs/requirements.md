@@ -59,7 +59,7 @@ are accepted.
 
 | FR | Operation (derived) | Status |
 |----|---------------------|--------|
-| FR-8 | подать заявку магазина | Pending |
+| FR-8 | подать заявку магазина | **Accepted** |
 | FR-9 | обработать заявку (отпуск товаров со склада в магазин) | Pending |
 
 Rationale: обработка заявки и отпуск — одна операция, не две («обработать» = отпустить:
@@ -124,6 +124,10 @@ Semantics of «текущий год» (agreed): заявка текущего �
 ### BR-5
 
 «Количество поступления — целое число, большее нуля».
+
+### BR-6
+
+«Количество запрашиваемого товара — целое число, большее нуля».
 
 ## 6. Functional requirements (FR)
 
@@ -211,6 +215,31 @@ Original wording: «просмотреть информацию о товара�
 Примечание: операция не изменяет складской список, не имеет ввода и веток отказа;
 пустой складской список — допустимое состояние (не ошибка).
 
+### FR-8. Подать заявку магазина
+
+Derived operation (Section 2.1): домен требует «иметь точные данные о заявках магазинов
+на текущий год»; среди семи исходных операций подача заявки отсутствует — восстановлено
+по описанию домена и пункту «Разработать: модули ввода…».
+
+«Сотрудник отдела снабжения (A-1) вводит название магазина, название товара и количество
+запрашиваемого товара. Введённые названия обрабатываются согласно D-1. Если нарушается
+BR-1 (для любого из названий) или BR-6 — операция отклоняется. В списке магазинов ищется
+магазин, чьё название совпадает с обработанным введённым названием (без учёта регистра);
+если магазин не найден — операция отклоняется. В складском списке ищется товар, чьё
+название совпадает с обработанным введённым названием (без учёта регистра); если товар
+не найден — операция отклоняется. Во всех случаях отказа данные не изменяются,
+выводится сообщение об ошибке, соответствующее причине отказа. Если магазин и товар
+найдены и BR-6 выполняется — создаётся заявка: система назначает ей номер (уникальный
+среди всех ранее назначенных номеров заявок), фиксирует дату подачи согласно A-3,
+устанавливает статус «подана» и состав: магазин, товар и количество запрашиваемого
+товара».
+
+Примечания: непрерывность нумерации (без пропусков) не требуется — только уникальность;
+«подряд от 1, шаг +1» — деталь реализации. Количество заявки не ограничивается текущим
+остатком на складе: остаток проверяется при обработке заявки (FR-9). Дублирующиеся
+заявки (одинаковый магазин, товар и количество) допускаются — уникальность живёт только
+в номере заявки.
+
 ## 7. Accepted elaborations (принятые уточнения)
 
 Decisions that go beyond the explicit text of the методичка (agreed during FR-1 review):
@@ -228,6 +257,9 @@ Decisions that go beyond the explicit text of the методичка (agreed dur
 | EL-9 | Receipt quantity must be a positive integer (BR-5); units are whole items — the методичка does not define units; fractional, zero and negative values are rejected | FR-5, Q2 |
 | EL-10 | FR-6 display ordering is deterministic: alphabetical by processed name, case-insensitive (методичка is silent); BR-2 uniqueness guarantees a total order with no ties | FR-6, Q3 |
 | EL-11 | A store request covers a single product (single-line request) — chosen for formalization simplicity; multi-line requests are an extension candidate | FR-8 planning, Q3 |
+| EL-12 | Requested quantity is not capped by the current warehouse stock at submission; the stock check happens at processing (FR-9) — validation at the point of action | FR-8, Q2 |
+| EL-13 | Duplicate requests (same store, product, quantity) are allowed; uniqueness lives on the request number only | FR-8, Q3 |
+| EL-14 | A request gets a system-assigned unique number (continuity not required) and the status «подана» at submission | FR-8, Q1 |
 
 ## 8. Project extensions and future ideas
 Project extensions: none yet.
