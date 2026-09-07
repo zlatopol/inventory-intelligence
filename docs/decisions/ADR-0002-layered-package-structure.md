@@ -1,6 +1,7 @@
-# ADR-0002: Layered package structure
+# ADR-0002: Package structure
 
-- **Status**: accepted (2026-09-07)
+- **Status**: accepted (2026-09-07); **редакция 2** (2026-09-07, same day) — decision
+  reversed by the developer: domain-first instead of layer-first
 - **Phase**: 1 — design
 
 ## Context
@@ -9,27 +10,41 @@ Two common layouts: layer-first (`api/`, `services/`, `repositories/`) vs
 domain-first (`products/`, `stores/`, `requests/` — each with its own layers).
 Three aggregates, one developer, learning project.
 
-## Decision
+## Decision (редакция 2)
 
-**Layer-first** packages: `app/api`, `app/services`, `app/repositories`, `app/models`,
-`app/schemas`, `app/core`.
+**Domain-first** packages — each domain module owns its layers:
 
-Rationale: the execution path of one request is readable top-to-bottom in the tree
-(API → service → repository), which matches how the project is learned and reviewed.
-At three aggregates the domain-first benefit (module autonomy) is not yet needed.
+```text
+app/
+├── products/        # router, service, repository, schemas, models
+├── stores/          # router, service, repository, schemas, models
+├── requests/        # router, service, repository, schemas, models (FR-8…FR-10)
+├── shared/          # db session, config, base domain-error class
+└── main.py          # app factory, router mounting
+tests/
+├── unit/
+├── integration/
+└── api/
+```
 
-## Alternatives considered
+Rationale (developer's): cheaper future scaling — a domain module is self-contained,
+so extracting or handing off «products» later touches one folder, not four.
 
-Domain-first — deferred: better module encapsulation and cheaper extraction of a
-bounded context, but scatters one use case across folders at this scale.
+Cross-domain use cases (FR-9 lives in `requests/` and imports products/stores
+repositories) are acceptable at this scale.
+
+## Decision (редакция 1, superseded)
+
+Layer-first chosen for top-to-bottom readability of one request's path.
+Reversed the same day: the developer values module autonomy higher, and the
+codebase is still empty — the cheapest possible moment to reverse.
 
 ## Consequences
 
-- Use cases touching several aggregates (FR-9: warehouse + store + request) import
-  several repositories into one service — acceptable now.
-- Folder moves are a cheap refactor while the codebase is small.
+- The module boundary replaces the folder boundary as the reading unit.
+- `shared/` must stay free of domain logic; domain errors live in `shared` only as
+  the base class, subtypes belong to their domains.
 
 ## Revisit trigger
 
-When `services/` or `repositories/` grows enough that related files stop being
-recognizable at a glance (est. > ~8–10 files per folder), or a second developer joins.
+None planned; extracting a domain into a service (ADR-0001 revisit) would start here.

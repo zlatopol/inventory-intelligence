@@ -55,18 +55,18 @@ Rules:
 | Testing | pytest | unit (services) / integration (repositories, real PG) / API (httpx) |
 | Runtime env | Docker Compose | local PostgreSQL; app container later |
 
-## 4. Package structure (ADR-0002)
+## 4. Package structure (ADR-0002, ред. 2 — domain-first)
 
-Layer-first (chosen for learnability at the current scale; revisit trigger — see ADR):
+Domain-first (reversed from layer-first on the developer's call, 2026-09-07):
+each domain module owns its layers.
 
 ```text
 app/
-├── api/            # routers: products.py, stores.py, requests.py, views.py
-├── services/       # product_service.py, store_service.py, request_service.py
-├── repositories/   # product_repository.py, store_repository.py, request_repository.py
-├── models/         # SQLAlchemy models (DB tables)
-├── schemas/        # Pydantic request/response schemas
-└── core/           # config, db session, errors (typed domain exceptions)
+├── products/       # router.py, service.py, repository.py, schemas.py, models.py
+├── stores/         # same layout
+├── requests/       # same layout (FR-8…FR-10; FR-9 service imports products/stores repos)
+├── shared/         # config, db session, base domain-error class
+└── main.py         # app factory, router mounting
 tests/
 ├── unit/           # service tests (BR logic, no DB)
 ├── integration/    # repository tests against real PostgreSQL
