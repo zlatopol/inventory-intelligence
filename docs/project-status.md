@@ -69,18 +69,27 @@ A-1 and A-2 accepted as proposed (canonical texts in `docs/requirements.md`, Sec
 FR-1 now references A-1. The term «складской список» is anchored in A-2: its meaning derives
 from the single-warehouse assumption, so no separate D-2 is introduced.
 
+## FR-2: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md`: BR-3, FR-2, elaborations EL-6…EL-7.
+
+Agreed decisions:
+
+- **Q1**: search by processed name (D-1), case-insensitive, condition stated directly (no BR-2 inversion — BR-2 keeps the FR-1 polarity «нарушается → отказ»); BR-1 applies to every operation with name input (empty input rejected as BR-1, not as «не найден»); «удаляется товар» (domain language, not «строка»);
+- **Q2**: product not found → rejection, list unchanged, own error message (EL-7);
+- **Q3 → BR-3**: deletion allowed only at zero warehouse quantity; quantity belongs to the product, wording anchored to the deletion operation («на складе» kept — store quantities will appear in FR-7);
+- «ненужный» = actor's judgment, not a system-checkable condition (note under FR-2);
+- hard vs soft delete (historical data) deliberately deferred to the DB design phase.
+
 ## Next step
 
-**FR-2** «удалить ненужный товар из складского списка» — in progress (Mentor Mode).
-Clarifying questions submitted 2026-09-07:
+**FR-3** «включить новый магазин в список магазинов» — Mentor Mode, clarifying questions
+submitted 2026-09-07:
 
-- Q1: how the product to delete is identified (name as identifier, D-1, case-insensitive match);
-- Q2: behavior when no such product exists in the складской список;
-- Q3 (BR-3 candidate): is deletion allowed when the product's warehouse quantity is non-zero?
-
-Note: «ненужный» is the actor's judgment, not a system-checkable condition. Deletion semantics
-for historical data (hard vs soft delete) is deliberately deferred to the DB design phase —
-at Phase 0 the FR records only the observable behavior of the складской список.
+- Q1: what input FR-3 takes (store attributes; trace to what the system later needs
+  from a store — store requests, FR-7 — without inventing requirements);
+- Q2: name rules for stores — generalize BR-1/BR-2 or introduce store-specific rules;
+- Q3: what is added to the store list on success (note: no quantity counterpart here).
 
 ## Repository notes
 
