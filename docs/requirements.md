@@ -27,7 +27,7 @@ The assignment defines seven operations; agreed FR order:
 | FR-3 | «включить новый магазин в список магазинов» | **Accepted** |
 | FR-4 | «удалить ненужный магазин из списка» | **Accepted** |
 | FR-5 | «учесть поступление некоторого товара на склад» | **Accepted** |
-| FR-6 | «просмотреть информацию о товарах на складе» | Pending |
+| FR-6 | «просмотреть информацию о товарах на складе» | **Accepted** |
 | FR-7 | «просмотреть информацию о товарах по магазинам» | Pending |
 
 Note: store requests («заявки магазинов на текущий год») appear in the assignment's domain
@@ -151,8 +151,22 @@ Original wording: «учесть поступление некоторого т�
 не используется как уменьшение складского количества: отпуск товара будет
 формализован при рассмотрении заявок магазинов — см. OP-2 (Section 9).
 
+### FR-6. Просмотреть информацию о товарах на складе
+
+Original wording: «просмотреть информацию о товарах на складе».
+
+«Сотрудник отдела снабжения (A-1) просматривает складской список. Для каждого
+товара складского списка отображаются его обработанное название (D-1) и количество
+товара на складе. Товары отображаются в порядке алфавита по обработанному названию
+(без учёта регистра). Если складской список пуст, отображается пустой результат;
+это не является ошибкой».
+
+Примечание: операция не изменяет складской список, не имеет ввода и веток отказа;
+пустой складской список — допустимое состояние (не ошибка).
+
 ## 7. Accepted elaborations (принятые уточнения)
 
+| EL-10 | FR-6 display ordering is deterministic: alphabetical by processed name, case-insensitive (методичка is silent); BR-2 uniqueness guarantees a total order with no ties | FR-6, Q3 |
 Decisions that go beyond the explicit text of the методичка (agreed during FR-1 review):
 
 | ID | Decision | Agreed as |
@@ -168,9 +182,14 @@ Decisions that go beyond the explicit text of the методичка (agreed dur
 | EL-9 | Receipt quantity must be a positive integer (BR-5); units are whole items — the методичка does not define units; fractional, zero and negative values are rejected | FR-5, Q2 |
 
 ## 8. Project extensions and future ideas
+Project extensions: none yet.
 
-None at Phase 0. Everything beyond the original assignment scope will be recorded here,
-clearly separated from Sections 2–7.
+Future ideas (parked, not committed):
+
+- отображение времени поступления/добавления товара (дата последнего поступления,
+  дата создания) — станет возможным после проектирования истории событий
+  (см. примечание FR-5 и OP-2); предложено при обсуждении FR-6, в нормативные
+  требования не входит.
 
 ## 9. Open points (OP)
 

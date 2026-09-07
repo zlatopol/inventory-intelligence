@@ -133,16 +133,26 @@ Agreed decisions:
   своя ошибка») — template checklist now has **4** slots: entity, rule ids, list,
   failure consequences.
 
+## FR-6: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md`: FR-6, EL-10; first future idea parked in Section 8.
+
+Agreed decisions:
+
+- **Q1**: displayed attributes = processed name + warehouse quantity (the only two artifacts define); receipt/creation timestamps rejected — not an artifact, «время поступления» is not a product attribute once receipts repeat (event history, deferred by design), parked as future idea;
+- **Q2**: new **read-only template** correctly identified by the developer: no input (BR-1 n/a), no rejection branches, empty складской список = valid state with empty result, not an error;
+- **Q3**: receipt-time ordering rejected (non-existent + ambiguous attribute, «интересно» is not a requirement); deterministic ordering chosen: alphabetical by processed name, case-insensitive (EL-10) — BR-2 uniqueness guarantees a total order with no ties.
+
 ## Next step
 
-**FR-6** «просмотреть информацию о товарах на складе» — Mentor Mode, questions
-submitted 2026-09-07:
+**FR-7** «просмотреть информацию о товарах по магазинам» — Mentor Mode, questions
+submitted 2026-09-07. This is the planned «заявки после FR-7» checkpoint:
 
-- Q1: what information is displayed (what product attributes exist at Phase 0);
-- Q2: this is the first **read-only** operation — does the add/delete template fit at all?
-  Key notion: empty складской список is a valid state, not an error;
-- Q3: does the display need ordering (методичка is silent; deterministic ordering matters
-  later for tests/API).
+- Q1: data inventory — which of FR-1…FR-6 links a конкретный товар to a конкретный магазин? (expected discovery: none; a store has only a name);
+- Q2: where per-store product data could come from in the domain description (заявки, отпуск со склада в магазин) → can FR-7 be completed before requests/выдача are formalized at all?
+- Q3: planning decision — (а) formalize заявки/выдача first (they are in the assignment's domain description — not an invention), then FR-7; (б) record FR-7 as a stub + open point; (в) developer's own option. With justification.
+
+Note: FR-7 is expected to trigger the store-request formalization work (OP-1, OP-2 depend on it).
 
 ## Repository notes
 
