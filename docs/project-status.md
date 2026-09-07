@@ -254,19 +254,25 @@ Accepted package recorded in `docs/requirements.md`: FR-7, EL-21.
   header, grammar, read-only примечание, zero-quantity impossibility note;
 - growth reference: FR-1 took 11 question rounds; FR-7 — one round + mechanical edits.
 
-## Next step
+## Phase 0 integrity check: PASSED (2026-09-07, one fix)
 
-**Phase 0 wrap-up checklist** — final consistency pass before closing the phase:
+Mechanical consistency pass over `docs/requirements.md`:
 
-1. cross-reference check: every FR references existing artifacts (A/D/BR ids), every
-   BR is referenced by at least one FR;
-2. status consistency: 10 FR accepted, no Pending/Deferred left; both OP closed;
-3. terminology consistency: «количество товара на складе / в магазине / поступления /
-   запрашиваемого товара» used uniformly;
-4. EL table complete, ordered, traces correct; Section 2/2.1 tables consistent;
-5. header note «Phase 0 — in progress» → complete after the pass;
-6. Phase 0 retrospective (what was learned, decision log summary) in project-status.md;
-7. preview of Phase 1 (design: architecture, DB schema, first vertical slice).
+- cross-references: every FR reference resolves to a declared artifact (no dangling ids);
+  every BR/D/A is referenced — except **A-2** (found, fixed: anchor «складской список (A-2)»
+  added at first Section 6 occurrence, FR-1);
+- statuses: 10/10 FR Accepted; no Pending/Deferred; OP-1/OP-2 closed;
+- quantity terminology uniform across inflections and line wraps (the four canonical
+  terms; two «его количество» anaphora cases with in-sentence antecedents — acceptable);
+- EL-1…EL-21 ordered; Section 2/2.1 tables consistent; typo scan clean.
+
+## Next step (updated)
+
+1. **Phase 0 retrospective** — developer questions: key decisions list; what would be
+   done differently in FR-1 now; which artifact types (A/D/BR/FR/EL/OP) proved useful;
+2. **Phase 1 preview** — design: modular-monolith architecture outline, first DB schema
+   sketch (entities already named by requirements), first vertical slice candidate;
+3. then Phase 0 header → complete, `docs/architecture.md`/`database.md` started.
 
 ## Repository notes
 

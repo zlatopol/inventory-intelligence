@@ -1,6 +1,7 @@
 # Requirements
 
-> Phase 0 — requirements formalization (in progress).
+> Phase 0 — requirements formalization (artifacts complete; integrity check passed
+> 2026-09-07; phase wrap-up in progress: retrospective + Phase 1 preview).
 > Artifacts are recorded here as they are accepted. Normative texts (A, D, BR, FR) are kept
 > in Russian — the language of the source assignment. Document scaffolding is in English.
 
@@ -148,7 +149,7 @@ Original wording: «включить новый товар в список то�
 
 «Сотрудник отдела снабжения (A-1) вводит название товара. Введённое название
 обрабатывается согласно D-1. Если нарушается BR-1 или BR-2 — операция отклоняется:
-складской список не изменяется, выводится сообщение об ошибке, соответствующее
+складской список (A-2) не изменяется, выводится сообщение об ошибке, соответствующее
 нарушенному правилу. Если BR-1 и BR-2 выполняются — в складской список добавляется
 товар: его обработанное название (D-1) и количество, равное 0».
 
