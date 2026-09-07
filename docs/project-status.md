@@ -112,18 +112,37 @@ draft FR-2 text) were detected during the check and superseded by the canonical 
 Fix: sections 5–7 rebuilt to canonical accepted texts; EL-6…EL-8 in the table; Section 9
 (Open points) added. Lesson recorded: review the **full** diff content before every commit.
 
+## FR-5: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md`: BR-5, FR-5, EL-9, OP-2;
+EL-7 trace extended to FR-5.
+
+Agreed decisions:
+
+- **Q1**: input = product name + receipt quantity; term pair fixed: «количество поступления»
+  (input) vs «количество товара на складе» (state);
+- **Q2**: negative receipt rejected — it is a covert new operation (списание/отгрузка) absent
+  from the seven assignment operations («мне кажется логичным» is not a requirement);
+  domain observation: within the seven operations warehouse stock only grows, and combined
+  with BR-3 a non-zero product can never be deleted → the developer's guard instinct was
+  right but belongs to store requests/отпуск → **OP-2**; **BR-5** = positive integer;
+  zero and fractional rejected (units = whole items, EL-9);
+- **Q3**: «товар не найден» → rejection (single creation path via FR-1); UX suggestion
+  «предложить выполнить FR-1» deferred to interface design (dropped from normative text);
+- recurring draft gap (2nd time): failure-consequences clause («список не изменяется +
+  своя ошибка») — template checklist now has **4** slots: entity, rule ids, list,
+  failure consequences.
+
 ## Next step
 
-**FR-5** «учесть поступление некоторого товара на склад» — Mentor Mode, questions
+**FR-6** «просмотреть информацию о товарах на складе» — Mentor Mode, questions
 submitted 2026-09-07:
 
-- Q1: operation input (product name + quantity?);
-- Q2: quantity validity rules (BR-5 candidate: positive? integer? is zero allowed?);
-- Q3: precondition — must the product already exist in the складской список (mirror
-  «не найден» rejection), or can a receipt create the product?
-
-Note: receipt as a historical event (ML extension interest) is a design topic,
-deliberately deferred at Phase 0 (same as hard/soft delete).
+- Q1: what information is displayed (what product attributes exist at Phase 0);
+- Q2: this is the first **read-only** operation — does the add/delete template fit at all?
+  Key notion: empty складской список is a valid state, not an error;
+- Q3: does the display need ordering (методичка is silent; deterministic ordering matters
+  later for tests/API).
 
 ## Repository notes
 

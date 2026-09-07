@@ -26,7 +26,7 @@ The assignment defines seven operations; agreed FR order:
 | FR-2 | «удалить ненужный товар из складского списка» | **Accepted** |
 | FR-3 | «включить новый магазин в список магазинов» | **Accepted** |
 | FR-4 | «удалить ненужный магазин из списка» | **Accepted** |
-| FR-5 | «учесть поступление некоторого товара на склад» | Pending |
+| FR-5 | «учесть поступление некоторого товара на склад» | **Accepted** |
 | FR-6 | «просмотреть информацию о товарах на складе» | Pending |
 | FR-7 | «просмотреть информацию о товарах по магазинам» | Pending |
 
@@ -73,6 +73,10 @@ description but are not among the seven operations — to be discussed separatel
 
 «Обработанное название (D-1) магазина не совпадает (без учёта регистра) ни с одним
 названием магазина из списка магазинов».
+
+### BR-5
+
+«Количество поступления — целое число, большее нуля».
 
 ## 6. Functional requirements (FR)
 
@@ -130,6 +134,23 @@ Original wording: «удалить ненужный магазин из спис
 не проверяется. Гард-правило вида BR-3 для магазина не вводится до формализации
 заявок магазинов — см. OP-1 (Section 9).
 
+### FR-5. Учесть поступление некоторого товара на склад
+
+Original wording: «учесть поступление некоторого товара на склад».
+
+«Сотрудник отдела снабжения (A-1) вводит название товара и количество поступления.
+Введённое название обрабатывается согласно D-1. Если нарушается BR-1 или BR-5 —
+операция отклоняется. В складском списке ищется товар, чьё название совпадает
+с обработанным введённым названием (без учёта регистра). Если такой товар не найден —
+операция отклоняется. Во всех случаях отказа складской список не изменяется,
+выводится сообщение об ошибке, соответствующее причине отказа. Если товар найден —
+количество товара на складе увеличивается на количество поступления».
+
+Примечания: единица количества — целая (штучная) единица; дробное, нулевое
+и отрицательное значения отклоняются (BR-5). Поступление с отрицательным количеством
+не используется как уменьшение складского количества: отпуск товара будет
+формализован при рассмотрении заявок магазинов — см. OP-2 (Section 9).
+
 ## 7. Accepted elaborations (принятые уточнения)
 
 Decisions that go beyond the explicit text of the методичка (agreed during FR-1 review):
@@ -142,8 +163,9 @@ Decisions that go beyond the explicit text of the методичка (agreed dur
 | EL-4 | Name comparison is case-insensitive; the stored spelling is the first entered one (after trimming) | Q11 |
 | EL-5 | Trimming of leading/trailing spaces (D-1); a whitespace-only name counts as empty and is rejected | Q5, Q9/Q10 |
 | EL-6 | Deletion from the warehouse list is allowed only when the product's warehouse quantity is zero (BR-3) | FR-2, Q3 |
-| EL-7 | Operational failure «товар не найден» when the entered name matches no product in the warehouse list; own error message, list unchanged | FR-2, Q1–Q2 |
+| EL-7 | Operational failure «товар не найден» when the entered name matches no product in the warehouse list; own error message, list unchanged | FR-2, FR-5 |
 | EL-8 | Operational failure «магазин не найден» — mirror of EL-7 for the store list; own error message, list unchanged | FR-4, Q1 |
+| EL-9 | Receipt quantity must be a positive integer (BR-5); units are whole items — the методичка does not define units; fractional, zero and negative values are rejected | FR-5, Q2 |
 
 ## 8. Project extensions and future ideas
 
@@ -159,3 +181,17 @@ clearly separated from Sections 2–7.
 
 Заведено при принятии FR-4: выбран вариант «FR-4 без гарда + явная открытая точка»
 вместо правила на ещё не формализованной сущности (forward reference). Status: **open**.
+
+### OP-2
+
+При формализации заявок магазинов и отпуска товаров (после FR-7) предусмотреть
+уменьшение складского количества: количество отгрузки — положительное целое число,
+не превосходящее остаток товара на складе.
+
+Мотивация: в рамках семи исходных операций складское количество только увеличивается
+(FR-5), поэтому товар с ненулевым количеством не может быть удалён (BR-3). Гард
+«по модулю не превосходит остаток» (предложен разработником при FR-5) сохранён здесь
+в форме, корректной для отгрузки: вводится положительное количество. Отрицательное
+поступление как «уменьшение склада» отвергнуто — это скрытая новая операция,
+отсутствующая в задании. Status: **open**.
+
