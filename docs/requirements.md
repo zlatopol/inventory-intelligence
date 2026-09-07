@@ -197,7 +197,6 @@ Original wording: «учесть поступление некоторого т�
 и отрицательное значения отклоняются (BR-5). Поступление с отрицательным количеством
 не используется как уменьшение складского количества: отпуск товара будет
 формализован при рассмотрении заявок магазинов — см. OP-2 (Section 9).
-| EL-11 | A store request covers a single product (single-line request) — chosen for formalization simplicity; multi-line requests are an extension candidate | FR-8 planning, Q3 |
 
 ### FR-6. Просмотреть информацию о товарах на складе
 
@@ -214,7 +213,6 @@ Original wording: «просмотреть информацию о товара�
 
 ## 7. Accepted elaborations (принятые уточнения)
 
-| EL-10 | FR-6 display ordering is deterministic: alphabetical by processed name, case-insensitive (методичка is silent); BR-2 uniqueness guarantees a total order with no ties | FR-6, Q3 |
 Decisions that go beyond the explicit text of the методичка (agreed during FR-1 review):
 
 | ID | Decision | Agreed as |
@@ -228,15 +226,17 @@ Decisions that go beyond the explicit text of the методичка (agreed dur
 | EL-7 | Operational failure «товар не найден» when the entered name matches no product in the warehouse list; own error message, list unchanged | FR-2, FR-5 |
 | EL-8 | Operational failure «магазин не найден» — mirror of EL-7 for the store list; own error message, list unchanged | FR-4, Q1 |
 | EL-9 | Receipt quantity must be a positive integer (BR-5); units are whole items — the методичка does not define units; fractional, zero and negative values are rejected | FR-5, Q2 |
+| EL-10 | FR-6 display ordering is deterministic: alphabetical by processed name, case-insensitive (методичка is silent); BR-2 uniqueness guarantees a total order with no ties | FR-6, Q3 |
+| EL-11 | A store request covers a single product (single-line request) — chosen for formalization simplicity; multi-line requests are an extension candidate | FR-8 planning, Q3 |
 
 ## 8. Project extensions and future ideas
 Project extensions: none yet.
 
 Future ideas (parked, not committed):
-прямое перемещение товара склад→магазин без заявки — исключено из минимального
+
+- прямое перемещение товара склад→магазин без заявки — исключено из минимального
   набора (все перемещения домена идут через заявки); упомянуто при планировании
   FR-8/FR-9;
-- 
 - отображение времени поступления/добавления товара (дата последнего поступления,
   дата создания) — станет возможным после проектирования истории событий
   (см. примечание FR-5 и OP-2); предложено при обсуждении FR-6, в нормативные
