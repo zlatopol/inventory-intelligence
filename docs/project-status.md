@@ -93,12 +93,37 @@ Agreed decisions:
 - **Q3**: no counter analogue for stores — store↔product links arise from other operations; a store is added with its name only;
 - two copy-paste slips caught at review («название товара» in the input branch; «BR-1 и BR-2» in the success branch) — mechanical, fixed during recording with developer's consent pattern; lesson recorded: template-slot checklist (entity, rule ids, list name) when cloning an FR.
 
+## FR-4: ACCEPTED (2026-09-07)
+
+Accepted package recorded in `docs/requirements.md`: FR-4, EL-8, OP-1 (new Section 9).
+
+- **Q1 (draft by developer)**: first zero-slot-error draft (entity, rule ids, list, A-1, D-1, direct search, «не найден» — all correct); one mechanical gap (missing «список не изменяется + своя ошибка» in rejection branches) completed at recording;
+- **Q2**: option (a) — FR-4 without a guard + **OP-1** (revisit store-deletion conditions when store requests are formalized after FR-7). A guard on an unformalized entity would be an unverifiable forward reference.
+
+## Incident & repair (2026-09-07)
+
+`docs/requirements.md` carried structural damage: BR-4 ordered before BR-3; canonical
+FR-1/FR-2 texts displaced to the end of Section 6 and interleaved with EL-6/EL-7 table
+rows. Present since commits `d7df353`/`f555fcc` — caused by the mentor's multi-part edits
+and committed because only `git diff --stat` was reviewed, not the full diff (process
+failure, acknowledged). The developer's uncommitted pastes (FR-1 variant without A-1,
+draft FR-2 text) were detected during the check and superseded by the canonical restore.
+
+Fix: sections 5–7 rebuilt to canonical accepted texts; EL-6…EL-8 in the table; Section 9
+(Open points) added. Lesson recorded: review the **full** diff content before every commit.
+
 ## Next step
 
-**FR-4** «удалить ненужный магазин из списка» — Mentor Mode, opened 2026-09-07:
+**FR-5** «учесть поступление некоторого товара на склад» — Mentor Mode, questions
+submitted 2026-09-07:
 
-- **Q1 (draft exercise)**: developer drafts the complete FR-4 by analogy with FR-2 (A-1, D-1, BR-1 first, direct search, «не найден» → rejection, mirror postcondition) using the template-slot checklist;
-- **Q2 (substantive)**: does store deletion need a guard rule (BR-3 analogue)? Open dependency: «заявки магазинов на текущий год» exist in the domain description but are scheduled for formalization after FR-7. Options: record FR-4 without a guard + an explicit open point, or formulate the guard now.
+- Q1: operation input (product name + quantity?);
+- Q2: quantity validity rules (BR-5 candidate: positive? integer? is zero allowed?);
+- Q3: precondition — must the product already exist in the складской список (mirror
+  «не найден» rejection), or can a receipt create the product?
+
+Note: receipt as a historical event (ML extension interest) is a design topic,
+deliberately deferred at Phase 0 (same as hard/soft delete).
 
 ## Repository notes
 
