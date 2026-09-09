@@ -351,12 +351,35 @@ delisted-but-present products = intended truth. Recorded: EL-22, FR-7 приме
 future idea (inter-store transfers). Review note: the developer named the price of the
 choice aloud and parked the scope-creep temptation — Phase 0 discipline holding.
 
-## Next step (updated)
+## Slice 1 (products): DONE (2026-09-09) — a80bba5
 
-1. **Project scaffold** (Implementation Mode): pyproject, `app/` domain-first skeleton
-   (ADR-0002 ред. 2), Docker Compose (PostgreSQL 16), Alembic init, pytest layout;
-2. **Slice 1 (products)** end-to-end: migration 0001 → model → repository → service →
-   API → tests (FR-1, FR-2, FR-5, FR-6; BR-1/BR-2/BR-3/BR-5).
+First vertical slice end-to-end, 29/29 tests green (unit 12, integration 5, API 12)
+against real PostgreSQL 16 (Docker). Live smoke test: trim by D-1, qty 0 (EL-2),
+case-insensitive duplicate → 409 with BR-2 message.
+
+- scaffold: pyproject (pythonpath for pytest), docker-compose (postgres:16 + healthcheck),
+  README quick start; venv on Python 3.14.3 (fixed: stale .venv from an earlier attempt
+  mixed 3.9/3.14 — recreated);
+- app/: domain-first (ADR-0002 ред. 2) — `app/products/` (models, schemas, repository,
+  service, router) + `app/shared/` (config via pydantic-settings, db session, typed
+  domain errors); `app/main.py` app factory + DomainError→HTTP mapping (EL-3);
+- migration 0001: product table + partial unique index `product_live_name_key` +
+  CHECK warehouse_quantity >= 0 — verified live via `\d product`;
+- service layer: FR-1/FR-2/FR-5/FR-6 with BR-1/BR-2/BR-3/BR-5, soft delete (ADR-0005),
+  ADR-0004 in action (flush IntegrityError → DuplicateProductNameError; covered by a
+  unit test with a fake session);
+- fixes during bring-up: alembic env.py needed sys.path shim for `app.*`; stray `Func`
+  import in models.
+
+## Next step
+
+1. **Slice 2 (stores)**: migration 0002 (store + partial index), mirror of slice 1
+   (FR-3, FR-4, BR-4; BR-8 stub until requests exist — store_service.delete must check
+   pending requests only when the requests table appears; for now BR-8 is vacuously true);
+2. **Slice 3 (requests)**: migrations 0003 (store_request + sequence + store_product),
+   FR-8/FR-9/FR-10 with the FR-9 atomicity via one service transaction (ADR-0003)
+   and BR-6/BR-7; BR-8 becomes enforceable;
+3. **Slice 4 (FR-7)**: per-store view.
 
 ## Repository notes
 
