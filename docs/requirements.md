@@ -247,7 +247,8 @@ Original wording: «просмотреть информацию о товара�
 наследуется от складского списка, BR-2), поэтому алфавитный порядок товаров —
 полный; порядок магазинов полный по BR-4. Количества товара в магазине всегда
 больше нуля (уменьшения количества в магазине не предусмотрено ни одной
-операцией).
+операцией). Отображаются также товары, удалённые из складского списка (FR-2),
+но остающиеся в магазинах — семантика снятия из ассортимента (EL-22, OP-3).
 
 ### FR-8. Подать заявку магазина
 
@@ -343,6 +344,7 @@ Decisions that go beyond the explicit text of the методичка (agreed dur
 | EL-19 | FR-4 guard (BR-8) blocks deletion only on «подана» requests: guarding on all requests would make store deletion practically impossible; processed requests keep referencing the deleted store — the store name is recorded in the заявка (inert history, displayable by FR-10) | OP-1, Q1–Q2 |
 | EL-20 | FR-10 displays all requests incl. past years; year filtering is a future refinement; ordering by unique request number; fields exactly as recorded by FR-8/FR-9 | FR-10, Q3 |
 | EL-21 | FR-7 display: two-level deterministic ordering (stores by name — BR-4 total order; products within a store — uniqueness inherited from the warehouse list, BR-2); a store without products is displayed with an empty product list, not hidden; per-store quantities are always > 0 (no operation decreases them) | FR-7 |
+| EL-22 | Deletion semantics (OP-3): removal from the складской список = assortment delisting («больше не заказываем»), not a claim the product vanished; store остатки are physical reality drained by the stores' own process (outside the system scope, A-1) — hence BR-3 checks warehouse quantity only and FR-7 legitimately shows delisted-but-present products | OP-3 |
 
 ## 8. Project extensions and future ideas
 Project extensions: none implemented yet.
@@ -356,6 +358,11 @@ Extension candidates (agreed as future work, not committed):
   планировании FR-8 (EL-11).
 
 Future ideas (parked, not committed):
+
+- перемещение товара между магазинами силами сотрудника отдела снабжения
+  (требовало бы операции, уменьшающей остаток магазина); предложено при закрытии
+  OP-3 — осознанно за границей текущего объёма (остатки магазинов меняет процесс
+  магазина, не наша система);
 
 - прямое перемещение товара склад→магазин без заявки — исключено из минимального
   набора (все перемещения домена идут через заявки); упомянуто при планировании
@@ -400,7 +407,9 @@ BR-3 разрешает удаление товара при количеств�
 
 Заведено при проектировании схемы БД (ADR-0005, 2026-09-07): перекрёстная проверка
 требований и схемы вскрыла, что гарды FR-2/FR-4 асимметричны — BR-8 смотрит на заявки,
-BR-3 не смотрит на магазины. Варианты: (i) расширить BR-3 — «…и ни в одном магазине нет
-этого товара»; (ii) оставить как есть — остатки магазинов показывают физическую
-реальность, FR-7 отображает их и для удалённого товара. Status: **open**.
+BR-3 не смотрит на магазины. Status: **closed** (2026-09-09) — выбран вариант (ii):
+BR-3 без изменений. Принята семантика снятия из ассортимента (EL-22): удаление
+из складского списка — решение об ассортименте, остатки магазинов — физическая
+реальность вне процесса отдела снабжения. FR-7 отображает товары, удалённые
+из складского списка, но остающиеся в магазинах (примечание FR-7).
 

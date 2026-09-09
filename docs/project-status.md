@@ -340,15 +340,23 @@ Design Q&A (mentor questions → developer answers → decisions):
 quantities — a product can be soft-deleted while stores still hold it. FR-7
 semantics for such rows depend on the resolution.
 
+## OP-3: CLOSED (2026-09-09) — delisting semantics
+
+Developer's resolution: option (ii), BR-3 unchanged — with a semantics definition, not
+just a pick: складское удаление = assortment delisting («больше не заказываем»);
+store остатки = physical reality drained by the stores' own process (outside scope, A-1).
+The BR-3/BR-8 «asymmetry» is thereby explained, not patched: BR-8 watches our activity
+(заявки), BR-3 watches our stock; store stock is not ours to guard. FR-7 showing
+delisted-but-present products = intended truth. Recorded: EL-22, FR-7 примечание,
+future idea (inter-store transfers). Review note: the developer named the price of the
+choice aloud and parked the scope-creep temptation — Phase 0 discipline holding.
+
 ## Next step (updated)
 
-1. **Resolve OP-3** (Mentor Mode): (i) extend BR-3 («и ни в одном магазине нет этого
-   товара») vs (ii) keep — stores display physical reality incl. deleted products;
-   then update requirements + database notes accordingly;
-2. **Project scaffold**: pyproject, app/ domain-first skeleton (ADR-0002 ред. 2),
-   Docker Compose (PostgreSQL), Alembic init;
-3. **Slice 1 (products)**: migration 0001 → model → repository → service → API →
-   tests (FR-1, FR-2, FR-5, FR-6).
+1. **Project scaffold** (Implementation Mode): pyproject, `app/` domain-first skeleton
+   (ADR-0002 ред. 2), Docker Compose (PostgreSQL 16), Alembic init, pytest layout;
+2. **Slice 1 (products)** end-to-end: migration 0001 → model → repository → service →
+   API → tests (FR-1, FR-2, FR-5, FR-6; BR-1/BR-2/BR-3/BR-5).
 
 ## Repository notes
 
