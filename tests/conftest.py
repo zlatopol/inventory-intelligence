@@ -35,5 +35,7 @@ def db_session(database) -> Session:
         yield session
         session.rollback()
     with engine.begin() as conn:
-        conn.execute(text("TRUNCATE product RESTART IDENTITY"))
+        # Slice 3 note: store_request FKs will require listing it first
+        # (TRUNCATE store_request, product, store ...).
+        conn.execute(text("TRUNCATE product, store RESTART IDENTITY"))
     engine.dispose()

@@ -36,3 +36,13 @@ class InvalidReceiptQuantityError(DomainError):
         super().__init__(
             "Количество поступления должно быть целым числом, большим нуля (BR-5)"
         )
+
+
+class DuplicateStoreNameError(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Магазин с таким названием уже есть в списке магазинов (BR-4)")
+
+
+class StoreNotFoundError(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Магазин с таким названием не найден в списке магазинов")

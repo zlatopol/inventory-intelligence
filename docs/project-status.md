@@ -371,15 +371,32 @@ case-insensitive duplicate → 409 with BR-2 message.
 - fixes during bring-up: alembic env.py needed sys.path shim for `app.*`; stray `Func`
   import in models.
 
+## Slice 2 (stores): DONE (2026-09-10)
+
+Developer-written slice (first own code) under mentor review; finalized jointly.
+48/48 tests green (19 new: unit 9, integration 4, API 6) against real PostgreSQL.
+Live smoke: trim by D-1, case-insensitive duplicate → 409 with BR-4 message, GET list.
+
+- Q0 decision → **FR-11** (derived, GET /stores) recorded in requirements.md —
+  FR-10-style trace (operational necessity + «модули просмотра»);
+- BR-8 marked in code as a grep-able comment (`# BR-8 (FR-4): guard pending…`)
+  — vacuously true until slice 3;
+- review findings fixed (developer's draft): store error classes were nested inside
+  another error class (indentation → module-level ImportError); migration 0002 had
+  `revision="0001"/down_revision=None` (two heads); stores_router was not mounted in
+  main.py (masking the ImportError); conftest TRUNCATE extended to store; cosmetics
+  (unused imports, docstring copy-paste, dead commented constraint).
+  Lesson recorded: grep "line exists" ≠ "behavior works" — verification is by import/run;
+- ops note: after a host reboot Docker Desktop must be started manually (`open -a Docker`);
+  without the running daemon the compose plugin is unavailable and all DB tests fail
+  with connection errors — check `docker info` first when integration tests suddenly error.
+
 ## Next step
 
-1. **Slice 2 (stores)**: migration 0002 (store + partial index), mirror of slice 1
-   (FR-3, FR-4, BR-4; BR-8 stub until requests exist — store_service.delete must check
-   pending requests only when the requests table appears; for now BR-8 is vacuously true);
-2. **Slice 3 (requests)**: migrations 0003 (store_request + sequence + store_product),
-   FR-8/FR-9/FR-10 with the FR-9 atomicity via one service transaction (ADR-0003)
-   and BR-6/BR-7; BR-8 becomes enforceable;
-3. **Slice 4 (FR-7)**: per-store view.
+1. **Slice 3 (requests)**: migration 0003 (store_request + sequence + store_product),
+   FR-8/FR-9/FR-10, BR-6/BR-7, BR-8 becomes enforceable (guard in store deletion),
+   FR-9 atomicity in one service transaction (ADR-0003); TRUNCATE order update;
+2. **Slice 4 (FR-7)**: per-store view (GET /stores view grouped by store).
 
 ## Repository notes
 

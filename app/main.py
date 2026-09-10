@@ -6,18 +6,23 @@ from app.shared.config import get_settings
 from app.shared.errors import (
     DomainError,
     DuplicateProductNameError,
+    DuplicateStoreNameError,
     EmptyNameError,
     InvalidReceiptQuantityError,
     ProductDeletionBlockedError,
     ProductNotFoundError,
+    StoreNotFoundError,
 )
+from app.stores.router import router as stores_router
 
 _STATUS_BY_TYPE: dict[type[DomainError], int] = {
     EmptyNameError: 400,
     InvalidReceiptQuantityError: 422,
     DuplicateProductNameError: 409,
+    DuplicateStoreNameError: 409,
     ProductDeletionBlockedError: 409,
     ProductNotFoundError: 404,
+    StoreNotFoundError: 404,
 }
 
 
@@ -32,6 +37,7 @@ def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(title=settings.app_name)
     app.include_router(products_router)
+    app.include_router(stores_router)
 
     @app.exception_handler(DomainError)
     async def domain_error_handler(_: Request, exc: DomainError) -> JSONResponse:
