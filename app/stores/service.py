@@ -4,11 +4,13 @@ from datetime import UTC, datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.requests.repository import StoreRequestRepository
 from app.stores.models import Store
 from app.stores.repository import StoreRepository
 from app.shared.errors import (
     DuplicateStoreNameError,
     EmptyNameError,
+    StoreDeletionBlockedError,
     StoreNotFoundError,
 )
 
@@ -20,8 +22,14 @@ class StoreService:
     Transaction owner per ADR-0003: mutating use cases commit here.
     """
 
-    def __init__(self, repository: StoreRepository, session: Session) -> None:
+    def __init__(
+        self,
+        repository: StoreRepository,
+        requests_repo: StoreRequestRepository,
+        session: Session,
+    ) -> None:
         self._repo = repository
+        self._requests_repo = requests_repo
         self._session = session
 
     def create_store(self, raw_name: str) -> Store:
@@ -50,8 +58,8 @@ class StoreService:
         if not name:
             raise EmptyNameError  # BR-1
         store = self._get_live_or_raise(name)
-        # BR-8 (FR-4): guard pending («подана») requests here — slice 3
-        # (vacuously true while store_request does not exist).
+        if self._requests_repo.has_pending_for_store(store.id):
+            raise StoreDeletionBlockedError  # BR-8: заявки «подана» блокируют удаление
         store.deleted_at = datetime.now(UTC)
         self._session.commit()
 

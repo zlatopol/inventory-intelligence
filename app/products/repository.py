@@ -36,3 +36,16 @@ class ProductRepository:
             .order_by(func.lower(Product.name))
         )
         return self._session.scalars(stmt).all()
+
+    def find_live_by_id(self, id: int) -> Product | None:
+        stmt = select(Product).where(
+            Product.deleted_at.is_(None),
+            Product.id == id,
+        )
+        return self._session.scalars(stmt).first()
+
+    def find_id_by_name(self, name: str) -> int:
+        stmt = select(Product).where(
+            Product.name == name
+        )
+        return self._session.scalar(stmt).first()

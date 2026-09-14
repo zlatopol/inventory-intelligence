@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.requests.repository import StoreRequestRepository
 from app.stores.repository import StoreRepository
 from app.stores.schemas import StoreCreate, StoreRead
 from app.stores.service import StoreService
@@ -10,7 +11,9 @@ router = APIRouter(prefix="/stores", tags=["stores"])
 
 
 def get_store_service(session: Session = Depends(get_session)) -> StoreService:
-    return StoreService(StoreRepository(session), session)
+    # BR-8 needs request data — the store service composes the requests
+    # repository (cross-domain composition per ADR-0002 ред. 2).
+    return StoreService(StoreRepository(session), StoreRequestRepository(session), session)
 
 
 @router.post("", response_model=StoreRead, status_code=201)

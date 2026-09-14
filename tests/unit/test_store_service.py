@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from app.shared.errors import (
     DuplicateStoreNameError,
     EmptyNameError,
+    StoreDeletionBlockedError,
     StoreNotFoundError,
 )
 from app.stores.models import Store
@@ -54,11 +55,29 @@ class FakeRepository:
             key=lambda s: s.name.lower(),
         )
 
+class FakeRequestsRepository:
+    """Stand-in for StoreRequestRepository — only the BR-8 guard query."""
 
-def make_service(repo: FakeRepository | None = None, session: FakeSession | None = None):
+    def __init__(self, pending_store_ids: set[int] | None = None) -> None:
+        self.pending_store_ids = pending_store_ids or set()
+
+    def has_pending_for_store(self, store_id: int) -> bool:
+        return store_id in self.pending_store_ids
+
+
+def make_service(
+    repo: FakeRepository | None = None,
+    session: FakeSession | None = None,
+    requests_repo: FakeRequestsRepository | None = None,
+):
     repo = repo or FakeRepository()
     session = session or FakeSession()
-    return StoreService(repo, session), repo, session  # type: ignore[arg-type]
+    requests_repo = requests_repo or FakeRequestsRepository()
+    return (
+        StoreService(repo, requests_repo, session),  # type: ignore[arg-type]
+        repo,
+        session,
+    )
 
 
 # --- FR-3: create -----------------------------------------------------------
@@ -114,6 +133,33 @@ def test_delete_unknown_store_rejected():
     service, *_ = make_service()
     with pytest.raises(StoreNotFoundError):  # EL-8
         service.delete_store("Пятёрочка")
+
+
+def test_delete_blocked_by_pending_request():
+    """BR-8: заявки со статусом «подана» блокируют удаление магазина."""
+    store = Store(id=7, name="Пятёрочка")
+    service, *_ = make_service(
+        repo=FakeRepository([store]),
+        requests_repo=FakeRequestsRepository(pending_store_ids={7}),
+    )
+
+    with pytest.raises(StoreDeletionBlockedError):
+        service.delete_store("Пятёрочка")
+
+    assert store.deleted_at is None  # rejection changes nothing
+
+
+def test_delete_allowed_when_only_processed_requests():
+    """BR-8 scope: обработанные заявки не блокируют удаление (EL-19)."""
+    store = Store(id=7, name="Пятёрочка")
+    service, *_ = make_service(
+        repo=FakeRepository([store]),
+        requests_repo=FakeRequestsRepository(pending_store_ids=set()),
+    )
+
+    service.delete_store("Пятёрочка")
+
+    assert store.deleted_at is not None
 
 
 def test_delete_rejects_empty_name():

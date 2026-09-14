@@ -46,3 +46,30 @@ class DuplicateStoreNameError(DomainError):
 class StoreNotFoundError(DomainError):
     def __init__(self) -> None:
         super().__init__("Магазин с таким названием не найден в списке магазинов")
+
+class StoreDeletionBlockedError(DomainError):
+    def __init__(self) -> None:
+        super().__init__("У магазина есть заявки со статусом «подана» (BR-8)")
+
+class InvalidRequestQuantityError(DomainError):
+    def __init__(self) -> None:
+        super().__init__(
+            "Количество запрашиваемого товара — целое число, большее нуля (BR-6)"
+        )
+
+
+class RequestNotFoundError(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Заявка с таким номером не найдена")
+
+
+class RequestAlreadyProcessedError(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Заявка уже обработана")
+
+
+class InsufficientStockError(DomainError):
+    def __init__(self) -> None:
+        super().__init__(
+            "Количество товара на складе меньше количества заявки (BR-7)"
+        )

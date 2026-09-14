@@ -35,7 +35,11 @@ def db_session(database) -> Session:
         yield session
         session.rollback()
     with engine.begin() as conn:
-        # Slice 3 note: store_request FKs will require listing it first
-        # (TRUNCATE store_request, product, store ...).
-        conn.execute(text("TRUNCATE product, store RESTART IDENTITY"))
+        # All FK-referencing tables must be truncated in one statement —
+        # PostgreSQL refuses to truncate a table referenced by a foreign key
+        # unless the referencing tables are listed too (no CASCADE: the
+        # explicit list keeps every table consciously accounted for).
+        conn.execute(
+            text("TRUNCATE store_request, store_product, product, store RESTART IDENTITY")
+        )
     engine.dispose()

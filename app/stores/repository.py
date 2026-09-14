@@ -24,6 +24,19 @@ class StoreRepository:
         )
         return self._session.scalars(stmt).first()
 
+    def find_live_by_id(self, id: int) -> Store | None:
+        stmt = select(Store).where(
+            Store.deleted_at.is_(None),
+            Store.id == id,
+        )
+        return self._session.scalars(stmt).first()
+
+    def find_id_by_name(self, name: str) -> int:
+        stmt = select(Store).where(
+            Store.name == name
+        )
+        return self._session.scalars(stmt).first()
+
     def add(self, store: Store) -> Store:
         self._session.add(store)
         return store
