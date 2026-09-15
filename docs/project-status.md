@@ -4,7 +4,12 @@ Last updated: 2026-09-07
 
 ## Current phase
 
-**Phase 1 — Design** (opening).
+**Phase 2 — Extensions toward ML** (opening).
+
+**Phase 1 — Design & Implementation: COMPLETE (2026-09-15).** architecture.md + ADR-0001…0005;
+11/11 FR implemented end-to-end (4 slices, domain-first packages); 4 migrations;
+89 tests (unit/integration/api against real PostgreSQL); live demo `scripts/demo.sh`;
+retrospective recorded below.
 
 **Phase 0 — Requirements formalization: COMPLETE (2026-09-07).** All 10 operations
 accepted (7 original + 3 derived), 8 BR, 3 A, 1 D, 21 EL, both OP closed; integrity
@@ -407,15 +412,42 @@ expectation (С < Я), helper param name mismatch — code was right, tests were
 All 11 FR (FR-1…FR-11) are now implemented end-to-end: 4 migrations, 89 tests
 (unit 24 / integration 17 / api 24? — see pytest), PostgreSQL via Docker.
 
+## Slices retrospective (2026-09-15)
+
+- **R1 (что могу сам)**: всё, кроме тестов — honest. Phase 2 plan: first slice is
+  **test-first** (developer writes tests before implementation; mentor reviews tests
+  as code). Testing is also the core ML-engineer skill (boundaries, invariants,
+  leakage checks);
+- **R2 (hardest slice)**: requests — cognitive load of three aggregates + one
+  transaction + status machine + cross-domain composition; survived by small
+  review packages, each verified before submission;
+- **R3 (slice 2 redo)**: «последовательно писать и сразу проверять» — the discipline
+  actually demonstrated by slice 4 (the delta between slices 2 and 4 is measurable:
+  first-review defect count dropped to near zero).
+
+## PHASE 1: COMPLETE (2026-09-15)
+
+Design (architecture.md, database.md, ADR-0001…0005) + implementation: 11/11 FR
+end-to-end, 4 migrations, 89 tests, live demo script (`scripts/demo.sh`), all
+artifacts traceable to requirements (FR/BR/EL ids in code and messages).
+
+## Current phase (updated)
+
+**Phase 2 — Extensions toward ML** (opening).
+
 ## Next step
 
-**Phase 1 wrap-up**:
-1. live smoke demo via curl (full scenario FR-1→FR-11);
-2. push, update this file's Current phase;
-3. slices retrospective (what the developer now writes solo: query+grouping did land
-   nearly review-clean);
-4. Phase 2 preview: event history (receipt/shipment log — ML ground truth), CI
-   (GitHub Actions: pytest against a postgres service), containerized app.
+**Phase 2 plan** (priority order):
+
+1. **Event history** (test-first, developer-owned tests): append-only `stock_event`
+   table fed by FR-5 (receipt) and FR-9 (shipment) — the ground truth for future
+   demand forecasting; same transaction as the state change (atomicity naturally
+   reused);
+2. **CI**: GitHub Actions — pytest (unit) + integration/API against a postgres
+   service container; run on every push;
+3. **App container**: Dockerfile + full compose stack (api + db) for portfolio demos;
+4. Then the ML track proper: dataset from events, baseline (naive/moving average),
+   chronological validation — per docs/requirements.md §8 separation.
 
 ## Repository notes
 
