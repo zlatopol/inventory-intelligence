@@ -361,6 +361,7 @@ Decisions that go beyond the explicit text of the методичка (agreed dur
 | EL-20 | FR-10 displays all requests incl. past years; year filtering is a future refinement; ordering by unique request number; fields exactly as recorded by FR-8/FR-9 | FR-10, Q3 |
 | EL-21 | FR-7 display: two-level deterministic ordering (stores by name — BR-4 total order; products within a store — uniqueness inherited from the warehouse list, BR-2); a store without products is displayed with an empty product list, not hidden; per-store quantities are always > 0 (no operation decreases them) | FR-7 |
 | EL-22 | Deletion semantics (OP-3): removal from the складской список = assortment delisting («больше не заказываем»), not a claim the product vanished; store остатки are physical reality drained by the stores' own process (outside the system scope, A-1) — hence BR-3 checks warehouse quantity only and FR-7 legitimately shows delisted-but-present products | OP-3 |
+| EL-23 | Re-created name = a new row with a new id (ADR-0005 partial unique index frees the name); the delisted old row keeps its store_product остатки. Consequence accepted: FR-7 may show two generations of the same visible name (old delisted stock + new live product) — physical truth, displayed separately; no special UX treatment for now | Soft-delete Q&A, 2026-09-15 |
 
 ## 8. Project extensions and future ideas
 Project extensions: none implemented yet.
