@@ -431,10 +431,6 @@ Design (architecture.md, database.md, ADR-0001…0005) + implementation: 11/11 F
 end-to-end, 4 migrations, 89 tests, live demo script (`scripts/demo.sh`), all
 artifacts traceable to requirements (FR/BR/EL ids in code and messages).
 
-## Current phase (updated)
-
-**Phase 2 — Extensions toward ML** (opening).
-
 ## Next step
 
 **Phase 2 plan** (priority order):
