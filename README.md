@@ -34,3 +34,12 @@ API docs: http://127.0.0.1:8000/docs
 docker compose up -d db   # integration/API tests need PostgreSQL
 .venv/bin/pytest
 ```
+
+## Demo
+
+Full assignment scenario (FR-1 … FR-11) against a running API:
+
+```bash
+.venv/bin/uvicorn app.main:app --port 8000   # terminal 1
+scripts/demo.sh                               # terminal 2
+```
