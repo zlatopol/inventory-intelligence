@@ -11,3 +11,17 @@ class StoreRead(BaseModel):
 
     id: int
     name: str
+
+
+class ProductStockRead(BaseModel):
+    """FR-7: товар внутри магазина."""
+
+    name: str
+    quantity: int
+
+
+class StoreStockRead(BaseModel):
+    """FR-7: магазин с его товарами (пустой список — валидный случай, EL-21)."""
+
+    name: str
+    products: list[ProductStockRead]

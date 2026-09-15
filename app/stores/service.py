@@ -72,3 +72,17 @@ class StoreService:
         if store is None:
             raise StoreNotFoundError
         return store
+
+    def stock_by_store(self) -> list[tuple[Store, list[tuple[str, int]]]]:
+        """FR-7: просмотреть информацию о товарах по магазинам.
+
+        Flat SQL rows grouped per store; ordering comes from SQL (EL-21);
+        a store without products yields an empty list (displayed, not hidden);
+        delisted-but-present products included (EL-22)."""
+        rows = self._repo.list_live_with_stock()
+        grouped = {}
+        for store, product_name, quantity in rows:
+            items = grouped.setdefault(store, [])
+            if product_name is not None:  # строка пустого магазина не попадает в товары
+                items.append((product_name, quantity))
+        return list(grouped.items())

@@ -3,7 +3,12 @@ from sqlalchemy.orm import Session
 
 from app.requests.repository import StoreRequestRepository
 from app.stores.repository import StoreRepository
-from app.stores.schemas import StoreCreate, StoreRead
+from app.stores.schemas import (
+    ProductStockRead,
+    StoreCreate,
+    StoreRead,
+    StoreStockRead,
+)
 from app.stores.service import StoreService
 from app.shared.db import get_session
 
@@ -40,3 +45,17 @@ def list_stores(
 ) -> list[StoreRead]:
     """FR-11: просмотреть список магазинов (derived, see requirements.md)."""
     return [StoreRead.model_validate(s) for s in service.list_stores()]
+
+
+@router.get("/stock", response_model=list[StoreStockRead])
+def store_stock(
+    service: StoreService = Depends(get_store_service),
+) -> list[StoreStockRead]:
+    """FR-7: просмотреть информацию о товарах по магазинам."""
+    return [
+        StoreStockRead(
+            name=store.name,
+            products=[ProductStockRead(name=n, quantity=q) for n, q in items],
+        )
+        for store, items in service.stock_by_store()
+    ]

@@ -391,12 +391,31 @@ Live smoke: trim by D-1, case-insensitive duplicate → 409 with BR-4 message, G
   without the running daemon the compose plugin is unavailable and all DB tests fail
   with connection errors — check `docker info` first when integration tests suddenly error.
 
+## Slices 3+4 (requests, FR-7 view): DONE (2026-09-15) — all 11 FR implemented
+
+Slice 3 (requests, `3565aae` + `084eaab`): 82 tests. Slice 4 (FR-7, this commit): +7 → **89 tests**.
+
+Slice 4 summary: developer built the core (query with LEFT JOINs + setdefault grouping —
+reviewed clean after fixes: dead `find_id_by_name` removed, honest annotations,
+`list(grouped.items())` return); mentor completed schemas/router/tests. Route:
+`GET /stores/stock` → nested JSON per EL-21/EL-22. Key test: delisted-but-present
+product is shown (EL-22); empty store displayed with `products: []`.
+
+Mentor's own test bugs caught by the run (kept as a lesson): wrong Russian-alphabet
+expectation (С < Я), helper param name mismatch — code was right, tests were wrong.
+
+All 11 FR (FR-1…FR-11) are now implemented end-to-end: 4 migrations, 89 tests
+(unit 24 / integration 17 / api 24? — see pytest), PostgreSQL via Docker.
+
 ## Next step
 
-1. **Slice 3 (requests)**: migration 0003 (store_request + sequence + store_product),
-   FR-8/FR-9/FR-10, BR-6/BR-7, BR-8 becomes enforceable (guard in store deletion),
-   FR-9 atomicity in one service transaction (ADR-0003); TRUNCATE order update;
-2. **Slice 4 (FR-7)**: per-store view (GET /stores view grouped by store).
+**Phase 1 wrap-up**:
+1. live smoke demo via curl (full scenario FR-1→FR-11);
+2. push, update this file's Current phase;
+3. slices retrospective (what the developer now writes solo: query+grouping did land
+   nearly review-clean);
+4. Phase 2 preview: event history (receipt/shipment log — ML ground truth), CI
+   (GitHub Actions: pytest against a postgres service), containerized app.
 
 ## Repository notes
 

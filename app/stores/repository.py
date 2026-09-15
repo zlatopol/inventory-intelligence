@@ -3,6 +3,8 @@ from collections.abc import Sequence
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.products.models import Product
+from app.requests.models import StoreProduct
 from app.stores.models import Store
 
 
@@ -31,12 +33,6 @@ class StoreRepository:
         )
         return self._session.scalars(stmt).first()
 
-    def find_id_by_name(self, name: str) -> int:
-        stmt = select(Store).where(
-            Store.name == name
-        )
-        return self._session.scalars(stmt).first()
-
     def add(self, store: Store) -> Store:
         self._session.add(store)
         return store
@@ -48,3 +44,18 @@ class StoreRepository:
             .order_by(func.lower(Store.name))
         )
         return self._session.scalars(stmt).all()
+
+    def list_live_with_stock(self) -> Sequence[tuple[Store, str | None, int | None]]:
+        """FR-7 read: flat rows (store, product_name, quantity) in one query.
+
+        LEFT JOIN keeps stores without products (a None row each — EL-21);
+        no deleted-filter on products: delisted products still present in stores
+        are shown (EL-22). Ordering: stores then products, case-insensitive."""
+        stmt = (
+            select(Store, Product.name, StoreProduct.quantity)
+            .outerjoin(StoreProduct, Store.id == StoreProduct.store_id)
+            .outerjoin(Product, StoreProduct.product_id == Product.id)
+            .where(Store.deleted_at.is_(None))
+            .order_by(func.lower(Store.name), func.lower(Product.name))
+        )
+        return self._session.execute(stmt).all()
