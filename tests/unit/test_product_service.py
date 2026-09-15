@@ -7,6 +7,8 @@ from datetime import UTC, datetime
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from fakes import FakeSession
+
 from app.products.models import Product
 from app.products.repository import ProductRepository
 from app.products.service import ProductService
@@ -17,25 +19,6 @@ from app.shared.errors import (
     ProductDeletionBlockedError,
     ProductNotFoundError,
 )
-
-
-class FakeSession:
-    """Session double: counts commits/rollbacks, can simulate a flush conflict."""
-
-    def __init__(self, flush_error: Exception | None = None) -> None:
-        self._flush_error = flush_error
-        self.commits = 0
-        self.rollbacks = 0
-
-    def flush(self) -> None:
-        if self._flush_error is not None:
-            raise self._flush_error
-
-    def commit(self) -> None:
-        self.commits += 1
-
-    def rollback(self) -> None:
-        self.rollbacks += 1
 
 
 class FakeRepository:
