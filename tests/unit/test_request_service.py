@@ -123,6 +123,16 @@ class FakeRequestsRepo:
         return row
 
 
+class FakeEventsRepo:
+    """Stand-in for StockEventRepository — collects added events (append-only)."""
+
+    def __init__(self) -> None:
+        self.events: list = []
+
+    def add(self, event) -> None:
+        self.events.append(event)
+
+
 def make_service(
     products: list[Product] | None = None,
     stores: list[Store] | None = None,
@@ -133,7 +143,11 @@ def make_service(
     requests_repo = FakeRequestsRepo(requests, store_products)
     session = session or FakeSession()
     service = RequestService(
-        requests_repo, FakeProductRepo(products), FakeStoreRepo(stores), session
+        requests_repo,
+        FakeProductRepo(products),
+        FakeStoreRepo(stores),
+        FakeEventsRepo(),
+        session,
     )
     return service, requests_repo, session  # type: ignore[arg-type]
 

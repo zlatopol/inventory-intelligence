@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.events.models import StockEvent
+from app.events.repository import StockEventRepository
 from app.products.models import Product
 from app.products.repository import ProductRepository
 from app.shared.errors import (
@@ -26,8 +28,14 @@ class ProductService:
     Transaction owner per ADR-0003: mutating use cases commit here.
     """
 
-    def __init__(self, repository: ProductRepository, session: Session) -> None:
+    def __init__(
+        self,
+        repository: ProductRepository,
+        events_repository: StockEventRepository,
+        session: Session,
+    ) -> None:
         self._repo = repository
+        self._events_repo = events_repository
         self._session = session
 
     def create_product(self, raw_name: str) -> Product:
@@ -70,6 +78,11 @@ class ProductService:
             raise InvalidReceiptQuantityError  # BR-5
         product = self._get_live_or_raise(name)
         product.warehouse_quantity += quantity
+        # Event history (Phase 2): the receipt event rides the SAME transaction
+        # as the state change — store_id/request_number stay None (Q1/Q2).
+        self._events_repo.add(
+            StockEvent(event_type="receipt", product_id=product.id, quantity=quantity)
+        )
         self._session.commit()
         return product
 

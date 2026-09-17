@@ -48,10 +48,24 @@ class FakeRepository:
         )
 
 
+class FakeEventsRepo:
+    """Stand-in for StockEventRepository — collects added events (append-only)."""
+
+    def __init__(self) -> None:
+        self.events: list = []
+
+    def add(self, event) -> None:
+        self.events.append(event)
+
+
 def make_service(repo: FakeRepository | None = None, session: FakeSession | None = None):
     repo = repo or FakeRepository()
     session = session or FakeSession()
-    return ProductService(repo, session), repo, session  # type: ignore[arg-type]
+    return (
+        ProductService(repo, FakeEventsRepo(), session),  # type: ignore[arg-type]
+        repo,
+        session,
+    )
 
 
 # --- FR-1: create -----------------------------------------------------------

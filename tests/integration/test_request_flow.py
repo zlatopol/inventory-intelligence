@@ -9,6 +9,7 @@ import pytest
 
 from app.products.models import Product
 from app.products.repository import ProductRepository
+from app.events.repository import StockEventRepository
 from app.requests.models import RequestStatus, StoreRequest
 from app.requests.repository import StoreRequestRepository
 from app.requests.service import RequestService
@@ -22,6 +23,7 @@ def make_service(db_session) -> RequestService:
         StoreRequestRepository(db_session),
         ProductRepository(db_session),
         StoreRepository(db_session),
+        StockEventRepository(db_session),
         db_session,
     )
 

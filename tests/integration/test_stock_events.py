@@ -11,6 +11,7 @@ import pytest
 from sqlalchemy import select
 
 from app.events.models import StockEvent
+from app.events.repository import StockEventRepository
 from app.products.models import Product
 from app.products.repository import ProductRepository
 from app.products.service import ProductService
@@ -35,6 +36,8 @@ def add_store(session, name: str) -> Store:
 
 
 def add_request(session, product: Product, store: Store, quantity: int) -> StoreRequest:
+    session.add_all([product, store])
+    session.flush()  # ids assigned here
     request = StoreRequest(
         product_id=product.id,
         store_id=store.id,
@@ -46,7 +49,9 @@ def add_request(session, product: Product, store: Store, quantity: int) -> Store
 
 
 def make_product_service(session) -> ProductService:
-    return ProductService(ProductRepository(session), session)
+    return ProductService(
+        ProductRepository(session), StockEventRepository(session), session
+    )
 
 
 def make_request_service(session) -> RequestService:
@@ -54,6 +59,7 @@ def make_request_service(session) -> RequestService:
         StoreRequestRepository(session),
         ProductRepository(session),
         StoreRepository(session),
+        StockEventRepository(session),
         session,
     )
 

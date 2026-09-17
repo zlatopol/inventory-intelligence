@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.events.repository import StockEventRepository
 from app.products.repository import ProductRepository
 from app.requests.models import StoreRequest
 from app.requests.repository import StoreRequestRepository
@@ -19,6 +20,7 @@ def get_request_service(session: Session = Depends(get_session)) -> RequestServi
         requests_repo=StoreRequestRepository(session),
         product_repo=ProductRepository(session),
         store_repo=StoreRepository(session),
+        events_repo=StockEventRepository(session),
         session=session,
     )
 

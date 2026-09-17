@@ -35,11 +35,14 @@ def db_session(database) -> Session:
         yield session
         session.rollback()
     with engine.begin() as conn:
-        # All FK-referencing tables must be truncated in one statement —
-        # PostgreSQL refuses to truncate a table referenced by a foreign key
-        # unless the referencing tables are listed too (no CASCADE: the
-        # explicit list keeps every table consciously accounted for).
+        # All FK-referencing tables must be truncated in one statement — PostgreSQL
+        # refuses otherwise (no CASCADE: the explicit list keeps every table
+        # consciously accounted for). NOTE: adding a table with FKs means adding
+        # it here — the third recurrence of this lesson (stock_event).
         conn.execute(
-            text("TRUNCATE store_request, store_product, product, store RESTART IDENTITY")
+            text(
+                "TRUNCATE stock_event, store_request, store_product, "
+                "product, store RESTART IDENTITY"
+            )
         )
     engine.dispose()

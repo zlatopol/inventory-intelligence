@@ -8,6 +8,8 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
+from app.events.models import StockEvent
+from app.events.repository import StockEventRepository
 from app.products.repository import ProductRepository
 from app.requests.models import RequestStatus, StoreRequest
 from app.requests.repository import StoreRequestRepository
@@ -35,11 +37,13 @@ class RequestService:
         requests_repo: StoreRequestRepository,
         product_repo: ProductRepository,
         store_repo: StoreRepository,
+        events_repo: StockEventRepository,
         session: Session,
     ) -> None:
         self._requests_repo = requests_repo
         self._product_repo = product_repo
         self._store_repo = store_repo
+        self._events_repo = events_repo
         self._session = session
 
     def submit_request(
@@ -99,6 +103,17 @@ class RequestService:
         )
         request.status = RequestStatus.PROCESSED
         request.processed_at = datetime.now(UTC)  # A-3
+        # Event history (Phase 2): the shipment event rides the SAME transaction;
+        # request_number is a snapshot (Q2) — witness of the past, not an FK.
+        self._events_repo.add(
+            StockEvent(
+                event_type="shipment",
+                product_id=product.id,
+                store_id=store.id,
+                request_number=request.number,
+                quantity=request.requested_quantity,
+            )
+        )
         self._session.commit()
         return request
 

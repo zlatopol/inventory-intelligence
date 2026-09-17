@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.events.repository import StockEventRepository
 from app.products.repository import ProductRepository
 from app.products.schemas import ProductCreate, ProductRead, ReceiptCreate
 from app.products.service import ProductService
@@ -10,7 +11,9 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 
 def get_product_service(session: Session = Depends(get_session)) -> ProductService:
-    return ProductService(ProductRepository(session), session)
+    return ProductService(
+        ProductRepository(session), StockEventRepository(session), session
+    )
 
 
 @router.post("", response_model=ProductRead, status_code=201)

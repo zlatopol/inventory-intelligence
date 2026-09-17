@@ -27,6 +27,7 @@ from app.shared.db import Base  # noqa: E402
 
 import app.products.models  # noqa: E402,F401  (register models on Base.metadata)
 import app.stores.models
+import app.events.models
 
 target_metadata = Base.metadata
 
