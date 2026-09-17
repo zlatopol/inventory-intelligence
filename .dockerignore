@@ -1,0 +1,14 @@
+# Slim build context — keeps builds fast and images clean.
+.git/
+.venv/
+.github/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+docs/
+scripts/
+tests/
+.env
+.DS_Store
