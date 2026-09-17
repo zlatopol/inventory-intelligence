@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: inventory
+          POSTGRES_PASSWORD: inventory
+          POSTGRES_DB: inventory
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U inventory"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install "fastapi>=0.115" "uvicorn[standard]>=0.30" \
+            "sqlalchemy>=2.0.30" "psycopg[binary]>=3.2" "alembic>=1.13" \
+            "pydantic>=2.7" "pydantic-settings>=2.3" "pytest>=8.2" "httpx>=0.27"
+
+      - name: Run tests
+        run: .venv/bin/pytest -q
