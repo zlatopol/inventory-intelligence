@@ -177,35 +177,38 @@ def build_services(session) -> SimpleNamespace:
     )
 
 
+def run_menu(ui, services) -> None:
+    """Цикл меню. Принимает ui и сервисы — поэтому тестируется с двойниками."""
+    while True:
+        ui.say("\n=== СНАБЖЕНИЕ — отдел снабжения оптовой базы ===")
+        for key, (title, _) in MENU.items():
+            ui.say(f"{key:>2}. {title}")
+        choice = ui.ask("Выбор: ").strip()
+
+        if choice == "0":
+            break
+        entry = MENU.get(choice)
+        if entry is None:
+            ui.say("Нет такого пункта")
+            continue
+        try:
+            entry[1](ui, services)  # Q1: DomainError ловится здесь, один раз
+        except DomainError as exc:
+            ui.say(f"! {exc}")
+        except (KeyboardInterrupt, EOFError):
+            ui.say("\nВыход.")
+            break
+
+
 def main() -> None:
+    """Точка входа: собрать реальные зависимости и запустить цикл."""
     from sqlalchemy.orm import sessionmaker
 
     from app.shared.db import get_engine
 
-    ui = ConsoleUI()
     engine = get_engine()
     with sessionmaker(bind=engine, expire_on_commit=False)() as session:
-        services = build_services(session)
-
-        while True:
-            ui.say("\n=== СНАБЖЕНИЕ — отдел снабжения оптовой базы ===")
-            for key, (title, _) in MENU.items():
-                ui.say(f"{key:>2}. {title}")
-            choice = ui.ask("Выбор: ").strip()
-
-            if choice == "0":
-                break
-            entry = MENU.get(choice)
-            if entry is None:
-                ui.say("Нет такого пункта")
-                continue
-            try:
-                entry[1](ui, services)  # Q1: DomainError ловится здесь, один раз
-            except DomainError as exc:
-                ui.say(f"! {exc}")
-            except (KeyboardInterrupt, EOFError):
-                ui.say("\nВыход.")
-                break
+        run_menu(ConsoleUI(), build_services(session))
 
 
 if __name__ == "__main__":
