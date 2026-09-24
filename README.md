@@ -43,3 +43,20 @@ Full assignment scenario (FR-1 … FR-11) against a running API:
 .venv/bin/uvicorn app.main:app --port 8000   # terminal 1
 scripts/demo.sh                               # terminal 2
 ```
+
+## Interactive menu (CLI)
+
+The system can also be used interactively — the same services behind the third door:
+
+```bash
+.venv/bin/python -m app.cli
+```
+
+All 11 operations in Russian, human-readable domain errors (BR-rules referenced
+in messages), exit with `0`.
+
+## Full stack (Docker)
+
+```bash
+docker compose up --build -d    # api (migrations + uvicorn) + postgres
+```

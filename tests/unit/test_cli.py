@@ -5,7 +5,7 @@
 """
 from types import SimpleNamespace
 
-from app.cli import handle_add_product, run_menu, MENU
+from app.cli import MENU, handle_add_product, run_menu
 
 
 class FakeUI:
@@ -68,7 +68,7 @@ def test_add_product_passes_raw_input_and_prints_product():
 
 
 def test_ask_int_repeats_prompt_on_garbage_then_accepts_number():
-    # TODO 1: ask_int повторяет вопрос при «abc», затем принимает число
+    """Мусорный ввод повторяет вопрос, затем число принимается."""
     ui = FakeUI(["abc", "7"])
 
     from app.cli import ask_int
@@ -80,7 +80,7 @@ def test_ask_int_repeats_prompt_on_garbage_then_accepts_number():
 
 
 def test_run_menu_unknown_choice_keeps_menu_alive():
-    # TODO 2: выбор «99» → «Нет такого пункта», меню продолжает работу
+    """Неизвестный пункт не роняет меню — оно продолжает работу."""
     ui = FakeUI(["99", "0"])
     products = FakeProducts()
 
@@ -91,7 +91,7 @@ def test_run_menu_unknown_choice_keeps_menu_alive():
 
 
 class FailingProducts(FakeProducts):
-    """Фейк, чей create_product бросает доменную ошибку (для TODO 3)."""
+    """Фейк, чей create_product бросает доменную ошибку."""
 
     def create_product(self, name: str):
         from app.shared.errors import DuplicateProductNameError
@@ -100,7 +100,7 @@ class FailingProducts(FakeProducts):
 
 
 def test_run_menu_domain_error_prints_message_and_survives():
-    # TODO 3: DomainError → «! …», цикл живёт и доходит до выхода
+    """DomainError печатается как «! …», цикл меню доживает до выхода."""
     ui = FakeUI(["1", "Сахар", "0"])
 
     run_menu(ui, make_services(FailingProducts()))
@@ -110,7 +110,7 @@ def test_run_menu_domain_error_prints_message_and_survives():
 
 
 def test_run_menu_zero_exits_without_service_calls():
-    # TODO 4: «0» → выход, сервисы не тронуты
+    """Выбор «0» завершает меню, не трогая сервисы."""
     ui = FakeUI(["0"])
     products = FakeProducts()
 
@@ -121,7 +121,7 @@ def test_run_menu_zero_exits_without_service_calls():
 
 
 def test_menu_has_eleven_operations_plus_exit_with_distinct_handlers():
-    # TODO 5: 11 операций + выход; handlers различны (set ловит дубликаты)
+    """Меню покрывает все 11 операций + выход; хэндлеры не дублируются."""
     assert len(MENU) == 12
     assert MENU["0"] == ("Выход", None)
 

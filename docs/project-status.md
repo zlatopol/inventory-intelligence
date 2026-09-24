@@ -431,19 +431,31 @@ Design (architecture.md, database.md, ADR-0001…0005) + implementation: 11/11 F
 end-to-end, 4 migrations, 89 tests, live demo script (`scripts/demo.sh`), all
 artifacts traceable to requirements (FR/BR/EL ids in code and messages).
 
+## CLI menu slice: DONE (2026-09-24) — original assignment fully delivered
+
+`app/cli.py` — the third door to the same services (after unit tests and API):
+11 operations + exit, dictionary-dispatch MENU, one DomainError catch in the loop
+(Q1), `_STATUS_RU` imported not duplicated (Q2/DRY), `ask_int` for mechanical
+parsing (Q3). Refactored for testability: `run_menu(ui, services)` extracted from
+`main()` — "untestable code asks to be changed".
+
+Developer path this slice: skeleton review (placeholders shuffled, menu gaps,
+missing ui) → all 11 handlers (7 clean, live smoke caught `.items()` on a list
+contract + str-vs-Enum `.value`) → own CLI tests (3/5 tested the wrong thing —
+fixed with named-by-behavior rewrites + FailingProducts fake; a lesson in
+"assert what you meant, not what you wrote"). Result: **98/98 tests**.
+
+Assignment trace complete: «Разработать: меню системы; модули ввода, изменения
+и просмотра данных» — menu ✓, modules ✓ (11/11 FR via three doors: tests/API/CLI).
+
 ## Next step
 
-**Phase 2 plan** (priority order):
-
-1. **Event history** (test-first, developer-owned tests): append-only `stock_event`
-   table fed by FR-5 (receipt) and FR-9 (shipment) — the ground truth for future
-   demand forecasting; same transaction as the state change (atomicity naturally
-   reused);
-2. **CI**: GitHub Actions — pytest (unit) + integration/API against a postgres
-   service container; run on every push;
-3. **App container**: Dockerfile + full compose stack (api + db) for portfolio demos;
-4. Then the ML track proper: dataset from events, baseline (naive/moving average),
-   chronological validation — per docs/requirements.md §8 separation.
+**Phase 2 remainder (ML track)** — per the recorded plan:
+1. seed script (events via our own services, seasonality embedded);
+2. dataset contract `(store, product, period, demand)` + adapter over `stock_event`;
+3. baselines (naive / moving average) with chronological validation;
+4. Kaggle adapter («Store Item Demand») as the real-data stage — recorded as
+   project extension in requirements.md §8.
 
 ## Repository notes
 
