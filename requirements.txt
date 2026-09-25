@@ -5,3 +5,4 @@ psycopg[binary]>=3.2
 alembic>=1.13
 pydantic>=2.7
 pydantic-settings>=2.3
+pandas>=2.2
