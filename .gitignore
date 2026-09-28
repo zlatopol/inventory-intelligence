@@ -18,3 +18,8 @@ venv/
 
 # Databases
 *.sqlite3
+
+# ML experiment tracking (sqlite store + artifacts)
+mlruns/
+mlartifacts/
+mlflow.db
