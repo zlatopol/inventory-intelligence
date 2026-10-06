@@ -22,7 +22,8 @@ model                  MAE    WAPE        (kaggle/store-item-demand, walk-forwar
 naive                  9.72   20.5%
 seasonal_naive_7       7.90   16.7%
 moving_average_7       7.67   16.2%
-lightgbm               5.79   12.2%       ← beats the baseline by 24.5% MAE
+lightgbm (50 pairs)    5.79   12.2%
+lightgbm (FULL 500)    6.01   11.5%      ← beats the baseline by 21.6% MAE
 ```
 
 Every experiment is tracked in MLflow (`mlflow ui`), features are leak-safe by
