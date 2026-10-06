@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.ml.baseline import walk_forward_evaluate  # noqa: E402
+from app.ml.features import FEATURE_COLUMNS  # noqa: E402
 from app.ml.metrics import mae, wape  # noqa: E402
 from app.ml.model import LightGBMModel  # noqa: E402
 from app.ml.sources import load_from_kaggle_csv  # noqa: E402
@@ -56,7 +57,32 @@ def main() -> None:
     print(f"Датасет: {len(dataset)} строк ({max_pairs} пар), {start} → {end}")
     print(f"{'модель':<22} {'MAE (шт)':>10} {'WAPE (%)':>10}  {'run':>10}")
     print(f"{'lightgbm':<22} {m:>10.2f} {w:>10.1f}  {run_id[:8]:>10}")
-    print(f"\nПланка: moving_average_7 — MAE 7.67 / WAPE 16.2")
+    print("\nПланка: moving_average_7 — MAE 7.67 / WAPE 16.2")
+
+    # --- Какие гипотезы оплатились: важности фичей --------------------
+    print("\nFeature importance (гипотезы H1–H4):")
+    importances = sorted(
+        zip(FEATURE_COLUMNS, model._regressor.feature_importances_),
+        key=lambda kv: -kv[1],
+    )
+    total = sum(value for _, value in importances)
+    for name, value in importances:
+        share = value / total * 100
+        print(f"  {name:<20} {share:5.1f}%  {'#' * int(share)}")
+
+    # --- Разбор ошибок: где модель ошибается сильнее ------------------
+    result["abs_error"] = (result["actual"] - result["prediction"]).abs()
+    by_dow = result.groupby(result["date"].dt.dayofweek)["abs_error"].mean()
+    print("\nMAE по дням недели (пн=0):")
+    for i, value in by_dow.items():
+        print(f"  {['пн','вт','ср','чт','пт','сб','вс'][i]}: {value:5.2f}  "
+              f"{'#' * int(value)}")
+
+    worst = (
+        result.groupby(["store_id", "product_id"])["abs_error"]
+        .mean().nlargest(3).round(2)
+    )
+    print("\nХудшие пары (MAE):", dict(worst))
 
 
 if __name__ == "__main__":
