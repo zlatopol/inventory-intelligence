@@ -2,12 +2,32 @@
 
 Information system for the supply department of a wholesale warehouse — a portfolio
 project built on top of an educational assignment (СПбГЭТУ «Технология
-программирования», Тема 4).
+программирования», Тема 4), extended into an end-to-end ML-engineering system.
 
 - Requirements: `docs/requirements.md` (Phase 0 — complete)
 - Architecture: `docs/architecture.md`, ADRs in `docs/decisions/`
 - Database design: `docs/database.md`
 - Progress log: `docs/project-status.md`
+
+## What's inside
+
+- **Backend**: FastAPI + SQLAlchemy + PostgreSQL, 11 operations (FR-1…FR-11)
+  through three doors: API, CLI menu, tests — domain-first packages, ADR-driven;
+- **Event history**: append-only `stock_event` journal (ADR-0006) — ground truth
+  for the ML track;
+- **ML track**: demand dataset over events/Kaggle CSV → baselines → LightGBM:
+
+```text
+model                  MAE    WAPE        (kaggle/store-item-demand, walk-forward)
+naive                  9.72   20.5%
+seasonal_naive_7       7.90   16.7%
+moving_average_7       7.67   16.2%
+lightgbm               5.79   12.2%       ← beats the baseline by 24.5% MAE
+```
+
+Every experiment is tracked in MLflow (`mlflow ui`), features are leak-safe by
+construction (see `app/ml/features.py`), hypotheses are grounded in
+`docs/img/` exploration charts.
 
 ## Quick start
 

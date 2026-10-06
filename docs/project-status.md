@@ -448,14 +448,36 @@ fixed with named-by-behavior rewrites + FailingProducts fake; a lesson in
 Assignment trace complete: «Разработать: меню системы; модули ввода, изменения
 и просмотра данных» — menu ✓, modules ✓ (11/11 FR via three doors: tests/API/CLI).
 
+## ML track: baselines + LightGBM (2026-10-06) — baseline beaten
+
+Полный цикл: разведка (docs/img/: тренд +35%, годичная сезонность ×1.89,
+стабильный недельный профиль, шум дня 0.27) → гипотезы H1–H4 → 8 фичей
+(leak-safe by construction: поштучный build_features + векторизованная
+обучающая таблица, скреплённые тестом согласованности) → walk-forward →
+MLflow-трекинг всех прогонов.
+
+Результаты (kaggle, 50 пар, 2013–2017):
+
+| модель | MAE | WAPE |
+|---|---|---|
+| naive | 9.72 | 20.5% |
+| seasonal_naive_7 | 7.90 | 16.7% |
+| moving_average_7 (планка) | 7.67 | 16.2% |
+| **lightgbm (retrain/28d)** | **5.79** | **12.2%** |
+
+Победа на −24.5% MAE; важности фичей подтверждают все четыре гипотезы
+(rolling 22%, month 21%, pair-level 21%, dayofweek 10%); year почти избыточен
+(тренд взят days_from_start). Полный прогон 500 пар — в MLflow.
+
+Инженерные находки: warmup=8 (shift(7) опустошает 7-дневную историю — поймано
+живым прогоном); переобучение кэшируется (retrain_every), прогноз — поштучным
+leak-safe путём; важности и разбор ошибок встроены в evaluate-скрипт.
+
 ## Next step
 
-**Phase 2 remainder (ML track)** — per the recorded plan:
-1. seed script (events via our own services, seasonality embedded);
-2. dataset contract `(store, product, period, demand)` + adapter over `stock_event`;
-3. baselines (naive / moving average) with chronological validation;
-4. Kaggle adapter («Store Item Demand») as the real-data stage — recorded as
-   project extension in requirements.md §8.
+Phase 2 wrap-up: статус/README финализация, ML-ретроспектива, тег v0.2.0;
+затем Phase 3-кандидаты: MLflow-сервер для команды, авто-переобучение
+по расписанию, API-эндпоинт прогноза (модель как сервис).
 
 ## Repository notes
 
