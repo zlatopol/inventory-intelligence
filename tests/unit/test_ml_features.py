@@ -25,7 +25,16 @@ def one_pair_history(demands_by_day: dict) -> pd.DataFrame:
     return make_history([(day, 1, 1, qty) for day, qty in demands_by_day.items()])
 
 
-# --- ОБРАЗЦЫ (по образцу пиши остальные) --------------------------------------
+# --- Граница времени и календарь --------------------------------------------
+
+
+def test_history_until_cuts_strictly_before_the_day():
+    """Граница: всё строго раньше дня — сам день исключается (Q3 как API)."""
+    dataset = one_pair_history({"2026-01-09": 5, "2026-01-10": 7, "2026-01-11": 9})
+
+    history = history_until(dataset, "2026-01-10")
+
+    assert history["date"].max() == pd.Timestamp("2026-01-09")  # 10-е и 11-е отрезаны
 
 
 def test_features_refuse_history_containing_target_day():
@@ -119,23 +128,11 @@ def test_features_cover_all_pairs_with_contract_columns():
 
     features = build_features(history, TARGET)
 
-    # Ожидаем по одной строке на пару (1,1), (1,2), (2,1)
     assert set(features[["store_id", "product_id"]].itertuples(index=False)) == {
         (1, 1),
         (1, 2),
         (2, 1),
     }
-    # Колонки: PAIR + FEATURE_COLUMNS
-    expected_columns = ["store_id", "product_id"] + [
-        "dayofweek",
-        "month",
-        "year",
-        "days_from_start",
-        "lag_1",
-        "lag_7",
-        "rolling_mean_7",
-        "expanding_mean_pair",
-    ]
     assert list(features.columns) == ["store_id", "product_id"] + FEATURE_COLUMNS
 
 
