@@ -475,11 +475,33 @@ days_from_start.
 живым прогоном); переобучение кэшируется (retrain_every), прогноз — поштучным
 leak-safe путём; важности и разбор ошибок встроены в evaluate-скрипт.
 
-## Next step
+## ML retrospective (2026-10-08)
 
-Phase 2 wrap-up: статус/README финализация, ML-ретроспектива, тег v0.2.0;
-затем Phase 3-кандидаты: MLflow-сервер для команды, авто-переобучение
-по расписанию, API-эндпоинт прогноза (модель как сервис).
+- **R1** (самое неожиданное): «метрики меняются в зависимости от данных» — the
+  baseline table flipped on real data (seasonal_naive dethroned). Built-in
+  consequences: data-version params in every MLflow run; exploration before
+  hypotheses;
+- **R2** (leakage, why shift(1) before rolling): honest gap — answered vaguely,
+  mentor explanation recorded: rolling at day D covers D−6…D (includes the
+  target!); shift(1) first → window D−7…D−1. The consistency test works because
+  the per-day build_features is an ORACLE — leak-proof by construction — so any
+  vectorized leak breaks row equality. TOPIC TO REVISIT before Phase 3 ML work;
+- **R3** (next improvement, WAPE < 10%): developer — hyperparameters, news/shock
+  data, holidays. Mentor priority: holidays/calendar first (cheap, grounded in
+  our own charts: December dip, July peak), params second (small gains), news
+  data — an honest far shelf (sourcing + alignment + overfit risk).
+
+## PHASE 2: COMPLETE (2026-10-08) — v0.2.0
+
+Event history + CI + Docker + seed + dataset contracts + baselines + MLflow +
+Kaggle stage + LightGBM (full 500 pairs: MAE 6.01 / WAPE 11.5%, baseline beaten
+by 21.6%). 126 tests green.
+
+## Current phase
+
+**Phase 3 — options open** (developer picks): forecast as an API endpoint
+(model as a service), scheduled retraining, MLflow server, or hypothesis-driven
+model improvements (holidays → params → news).
 
 ## Repository notes
 
