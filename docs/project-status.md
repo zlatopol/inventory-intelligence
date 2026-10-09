@@ -4,7 +4,12 @@ Last updated: 2026-09-07
 
 ## Current phase
 
-**Phase 2 — Extensions toward ML** (opening).
+**Phase 3 — Model as a service** (in progress).
+
+**Phase 2 — Extensions toward ML: COMPLETE (2026-10-08, v0.2.0).** Event history,
+CI, Docker, seed, dataset contracts, baselines, MLflow, Kaggle stage, LightGBM
+(full 500 pairs: MAE 6.01 / WAPE 11.5%, baseline beaten by 21.6%). See the
+PHASE 2 section below.
 
 **Phase 1 — Design & Implementation: COMPLETE (2026-09-15).** architecture.md + ADR-0001…0005;
 11/11 FR implemented end-to-end (4 slices, domain-first packages); 4 migrations;
@@ -497,11 +502,26 @@ Event history + CI + Docker + seed + dataset contracts + baselines + MLflow +
 Kaggle stage + LightGBM (full 500 pairs: MAE 6.01 / WAPE 11.5%, baseline beaten
 by 21.6%). 126 tests green.
 
-## Current phase
+## Forecast slice: DONE (2026-10-09, `5ae9708`)
 
-**Phase 3 — options open** (developer picks): forecast as an API endpoint
-(model as a service), scheduled retraining, MLflow server, or hypothesis-driven
-model improvements (holidays → params → news).
+`GET /forecast?store_id&product_id&days (1–14, default 3)` + `POST /forecast/retrain`
+(manual, форс-мажор per Q1). Design decisions (Q&A 2026-10-08): TTL-cached model
+(72 h) + manual retrain; history < 30 days → baseline moving-average with honest
+`model`/`warning` fields (Q2: baseline is a legitimate model for small data);
+recursive horizon (day D+2 uses D+1 prediction as lag input). Service takes an
+injected history loader → unit tests run on synthetic frames.
+
+Tests: 133/133 (unit 7 + api 2 new). Live demo OK (weekday profile visible in
+3-day forecast). Known small issue: forecast dates carry the time-of-day of the
+last event — normalize to midnight (first task below).
+
+## Next step (Phase 3 backlog)
+
+1. Normalize forecast dates to midnight (known issue above);
+2. CLI menu пункт 12 «Прогноз спроса» (store/product/days через ForecastService);
+3. Hypothesis-driven improvements (retrospective R3): holidays/calendar features
+   first, then hyperparameters, then multi-day horizon evaluation;
+4. Optional: scheduled retraining, MLflow server, forecast monitoring.
 
 ## Repository notes
 
