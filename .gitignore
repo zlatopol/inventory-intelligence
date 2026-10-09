@@ -23,3 +23,6 @@ venv/
 mlruns/
 mlartifacts/
 mlflow.db
+
+# Data: raw datasets are large and re-downloadable — never commit them
+data/raw/
