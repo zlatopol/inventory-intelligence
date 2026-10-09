@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-07
+Last updated: 2026-10-09
 
 ## Current phase
 
@@ -513,15 +513,42 @@ injected history loader → unit tests run on synthetic frames.
 
 Tests: 133/133 (unit 7 + api 2 new). Live demo OK (weekday profile visible in
 3-day forecast). Known small issue: forecast dates carry the time-of-day of the
-last event — normalize to midnight (first task below).
+the last event — normalize to midnight (CLOSED 2026-10-09, see the next section).
+
+## Day-boundary fix: DONE (2026-10-09)
+
+Known issue закрыт — и оказался глубже косметики: `load_from_stock_event`
+нарушал контракт датасета (сырые метки со временем, без агрегации по дням,
+без сетки с нулями). Kaggle-адаптер удовлетворял контракту «бесплатно»,
+а тесты кормили сервис чистой синтетикой — сломан был только прод-путь
+(«тесты проверяли не тот контракт»). Полная цепочка разбора с разработчиком:
+симптом → факты (seed пишет 8–20 UTC; адаптер только переименовывал колонки) →
+дизайн-Q&A:
+
+- **Q1**: контракт чинит АДАПТЕР, где он объявлен (docstring обещает
+  «взаимозаменяемость» — починка в потребителе превратила бы контракт
+  в convention; входов у сервиса два — forecast/retrain);
+- **Q2**: переиспользован `build_demand_dataset` — «события → дневной спрос»
+  одно знание, одна реализация (там уже живёт пойманный tz-шрам);
+  адаптер: конвертация зоны + фильтры по локальному дню + empty-case
+  с честными dtype (путь пустой БД в API-тестах);
+- **Q3**: граница дня = бизнес-таймзона → **ADR-0007**
+  (`Settings.business_timezone`, default Europe/Moscow). Порядок операций
+  проверен живым прогоном: `tz_convert → tz_localize(None) → normalize`
+  (сброс зоны первым принял бы UTC за локальное); `tz_localize(None)` на
+  наивных — no-op, датасетный слой совместим без правок.
+
+Валидация: +4 регресс-теста на адаптер («грязные» метки: время внутри дня,
+дубль дня, пропуск дня, пересечение границы 21:10 UTC = 00:10 след. дня
+Москвы; пустая БД) — **137/137**. Live smoke на сид-данных: полная сетка
+56 дн. × 12 пар = 672 строки, даты прогноза — наивные полуночи.
 
 ## Next step (Phase 3 backlog)
 
-1. Normalize forecast dates to midnight (known issue above);
-2. CLI menu пункт 12 «Прогноз спроса» (store/product/days через ForecastService);
-3. Hypothesis-driven improvements (retrospective R3): holidays/calendar features
+1. CLI menu пункт 12 «Прогноз спроса» (store/product/days через ForecastService);
+2. Hypothesis-driven improvements (retrospective R3): holidays/calendar features
    first, then hyperparameters, then multi-day horizon evaluation;
-4. Optional: scheduled retraining, MLflow server, forecast monitoring.
+3. Optional: scheduled retraining, MLflow server, forecast monitoring.
 
 ## Repository notes
 
