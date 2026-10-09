@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 
 from app.stores.router import router as stores_router
 from app.requests.router import router as requests_router
+from app.forecast.router import router as forecast_router
 from app.products.router import router as products_router
 
 from app.shared.config import get_settings
@@ -52,6 +53,7 @@ def create_app() -> FastAPI:
     app.include_router(products_router)
     app.include_router(stores_router)
     app.include_router(requests_router)
+    app.include_router(forecast_router)
 
     @app.exception_handler(DomainError)
     async def domain_error_handler(_: Request, exc: DomainError) -> JSONResponse:
