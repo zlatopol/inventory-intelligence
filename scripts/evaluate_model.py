@@ -1,6 +1,7 @@
 """Оценка LightGBM на реальных данных Kaggle: охота за планкой moving_average.
 
-Запуск: .venv/bin/python scripts/evaluate_model.py [max_pairs] [retrain_every]
+Запуск: .venv/bin/python scripts/evaluate_model.py [max_pairs] [retrain_every] [country]
+country — код страны календаря праздников (US) или пусто (без фичей).
 Планка (50 пар): moving_average_7 — MAE 7.67 / WAPE 16.2%.
 """
 import sys
@@ -25,11 +26,24 @@ WARMUP = 8
 def main() -> None:
     max_pairs = int(sys.argv[1]) if len(sys.argv) > 1 else 50
     retrain_every = int(sys.argv[2]) if len(sys.argv) > 2 else 28
+    country = sys.argv[3] if len(sys.argv) > 3 else ""
 
     dataset = load_from_kaggle_csv(DATA_PATH, max_pairs=max_pairs)
     start, end = dataset["date"].min().date(), dataset["date"].max().date()
 
-    model = LightGBMModel(retrain_every=retrain_every)
+    # Календарь страны источника: покрываем годы датасета с запасом в обе
+    # стороны (правило HOLIDAY_FAR: без запаса фича молча выродится в 999)
+    holiday_days: frozenset = frozenset()
+    if country:
+        import holidays
+
+        holiday_days = frozenset(
+            holidays.country_holidays(
+                country, years=range(start.year - 1, end.year + 3)
+            ).keys()
+        )
+
+    model = LightGBMModel(retrain_every=retrain_every, holiday_days=holiday_days)
     result = walk_forward_evaluate(dataset, model.forecast, warmup=WARMUP)
     m, w = mae(result["actual"], result["prediction"]), wape(
         result["actual"], result["prediction"]
@@ -45,7 +59,8 @@ def main() -> None:
                 "source": "kaggle/store-item-demand",
                 "max_pairs": max_pairs,
                 "retrain_every": retrain_every,
-                "features": 8,
+                "features": len(FEATURE_COLUMNS),
+                "holiday_country": country or "none",
                 "dataset_start": str(start),
                 "dataset_end": str(end),
                 "warmup": WARMUP,

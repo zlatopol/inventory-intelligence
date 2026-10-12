@@ -83,9 +83,15 @@ class LightGBMModel:
     ежемесячно — секунды; влияние на качество проверяется прогоном).
     """
 
-    def __init__(self, retrain_every: int = 28, params: dict | None = None) -> None:
+    def __init__(
+        self,
+        retrain_every: int = 28,
+        params: dict | None = None,
+        holiday_days: frozenset = frozenset(),
+    ) -> None:
         self.retrain_every = retrain_every
         self.params = {**DEFAULT_PARAMS, **(params or {})}
+        self.holiday_days = holiday_days  # календарь страны источника (может быть пустым)
         self._regressor: LGBMRegressor | None = None
         self._trained_through: pd.Timestamp | None = None
 
@@ -96,13 +102,13 @@ class LightGBMModel:
             self._regressor is None
             or (target_day - self._trained_through).days >= self.retrain_every
         ):
-            table = build_training_table(train)
+            table = build_training_table(train, holiday_days=self.holiday_days)
             self._regressor = LGBMRegressor(**self.params)
             self._regressor.fit(table[FEATURE_COLUMNS], table["demand"])
             self._trained_through = target_day
 
         # Прогнозные фичи — поштучным путём (защита от утечки по построению);
         # NaN-ы отдельных лагов LightGBM обрабатывает нативно.
-        features = build_features(train, target_day)
+        features = build_features(train, target_day, holiday_days=self.holiday_days)
         features["prediction"] = self._regressor.predict(features[FEATURE_COLUMNS])
         return features[PAIR + ["prediction"]]
