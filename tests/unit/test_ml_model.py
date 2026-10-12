@@ -47,6 +47,32 @@ def test_training_table_row_matches_per_day_features():
                 ), f"{column} расходится для {pair_index} на {day.date()}"
 
 
+def test_training_table_holidays_match_per_day_with_calendar():
+    """Оракул с НЕПУСТЫМ календарём: праздничные фичи согласованы между
+    векторизованным и поштучным путями (дефолт-пустой календарь проверяет
+    лишь тривиальное 999==999)."""
+    dataset = make_dataset(days=40)
+    calendar = frozenset({date(2026, 1, 15), date(2026, 2, 3)})
+    table = build_training_table(dataset, holiday_days=calendar).set_index(
+        ["date"] + PAIR
+    )
+
+    # 16 января: вперёд до 3 февраля — 18, назад от 15 января — 1
+    day = pd.Timestamp(date(2026, 1, 16))
+    per_day = build_features(
+        history_until(dataset, day), day, holiday_days=calendar
+    ).set_index(PAIR)
+    row = table.loc[day]
+
+    for pair_index in row.index:
+        assert row.loc[pair_index]["days_to_holiday"] == 18
+        assert row.loc[pair_index]["days_from_holiday"] == 1
+        assert (
+            per_day.loc[pair_index]["days_to_holiday"]
+            == row.loc[pair_index]["days_to_holiday"]
+        )
+
+
 def test_training_table_drops_warmup_days_per_pair():
     """Первые 7 дней каждой пары (NaN лаг_7) отсутствуют — констант нет."""
     dataset = make_dataset(days=15)

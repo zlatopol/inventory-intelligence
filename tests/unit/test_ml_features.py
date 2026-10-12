@@ -8,7 +8,13 @@ from datetime import date
 import pandas as pd
 import pytest
 
-from app.ml.features import FEATURE_COLUMNS, build_features, history_until
+from app.ml.features import (
+    HOLIDAY_FAR,
+    FEATURE_COLUMNS,
+    _holiday_distances,
+    build_features,
+    history_until,
+)
 
 TARGET = date(2026, 1, 10)  # суббота
 
@@ -55,6 +61,40 @@ def test_calendar_features_come_from_target_date_itself():
     assert row["dayofweek"] == 5  # суббота (пн=0)
     assert row["month"] == 1
     assert row["year"] == 2026
+
+
+def test_holiday_distances_boundary_cases():
+    """Дистанции: до/от ближайшего праздника; сам праздник — days_to=0;
+    пустой календарь/вне покрытия → HOLIDAY_FAR (знание «далеко», не NaN)."""
+    calendar = frozenset({date(2026, 1, 5), date(2026, 1, 20)})
+
+    # между праздниками: вперёд до 20-го — 6 дней, назад до 5-го — 9
+    assert _holiday_distances(pd.Timestamp("2026-01-14"), calendar) == (6, 9)
+    # в сам праздник: days_to=0, days_from смотрит на прошедший
+    assert _holiday_distances(pd.Timestamp("2026-01-20"), calendar) == (0, 15)
+    # вне покрытия календаря (позади всех): 999/999… нет — вперёд праздников нет,
+    # назад есть; пустой календарь — оба HOLIDAY_FAR
+    assert _holiday_distances(pd.Timestamp("2026-02-01"), calendar) == (HOLIDAY_FAR, 12)
+    assert _holiday_distances(pd.Timestamp("2026-01-14"), frozenset()) == (
+        HOLIDAY_FAR,
+        HOLIDAY_FAR,
+    )
+
+
+def test_holiday_features_reach_build_features_output():
+    """Фича доезжает до выхода build_features: одна для всех пар
+    (свойство даты), дефолт-вызов без календаря — HOLIDAY_FAR."""
+    history = make_history(
+        [("2026-01-09", 1, 1, 5), ("2026-01-09", 2, 1, 7)]
+    )
+    calendar = frozenset({date(2026, 1, 5), date(2026, 1, 15)})
+
+    with_cal = build_features(history, TARGET, holiday_days=calendar)
+    no_cal = build_features(history, TARGET)
+
+    assert (with_cal["days_to_holiday"] == 5).all()   # 10-е → 15-е
+    assert (with_cal["days_from_holiday"] == 5).all()  # 10-е ← 5-го
+    assert (no_cal[["days_to_holiday", "days_from_holiday"]] == HOLIDAY_FAR).all().all()
 
 
 # --- Тесты фич ----------------------------------------------------------------

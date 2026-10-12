@@ -18,7 +18,12 @@ rolling/expanding ПОТОМ — иначе текущий день попада
 import pandas as pd
 from lightgbm import LGBMRegressor
 
-from app.ml.features import FEATURE_COLUMNS, PAIR, build_features
+from app.ml.features import (
+    FEATURE_COLUMNS,
+    PAIR,
+    _holiday_distances,
+    build_features,
+)
 
 DEFAULT_PARAMS = {
     "objective": "regression",
@@ -28,11 +33,14 @@ DEFAULT_PARAMS = {
 }
 
 
-def build_training_table(dataset: pd.DataFrame) -> pd.DataFrame:
+def build_training_table(
+    dataset: pd.DataFrame, holiday_days: frozenset = frozenset()
+) -> pd.DataFrame:
     """Обучающая таблица: фичи каждого дня — только из его прошлого.
 
     Выход: [PAIR, date, FEATURE_COLUMNS..., demand]; первые 7 дней каждой
-    пары (NaN лагов) отброшены.
+    пары (NaN лагов) отброшены. holiday_days — тот же календарь, что
+    в поштучном build_features (и тот же расчёт — оракул сверяет построчно).
     """
     df = dataset.sort_values(PAIR + ["date"]).copy()
     df["dayofweek"] = df["date"].dt.dayofweek
@@ -50,6 +58,17 @@ def build_training_table(dataset: pd.DataFrame) -> pd.DataFrame:
     df["expanding_mean_pair"] = df.groupby(PAIR, sort=False)["demand"].transform(
         lambda s: s.shift(1).expanding().mean()
     )
+
+    # Праздничные дистанции: свойство даты → расчёт тот же, что поштучно
+    # (_holiday_distances), по уникальным дням + map (дней ~тысячи, не пары
+    # × дни) — согласованность путей по построению, а не по аккуратности.
+    to_map: dict = {}
+    from_map: dict = {}
+    for d in df["date"].unique():
+        ts = pd.Timestamp(d)
+        to_map[ts], from_map[ts] = _holiday_distances(ts, holiday_days)
+    df["days_to_holiday"] = df["date"].map(to_map)
+    df["days_from_holiday"] = df["date"].map(from_map)
 
     table = df.dropna(subset=["lag_7", "rolling_mean_7", "expanding_mean_pair"])
     return table[PAIR + ["date"] + FEATURE_COLUMNS + ["demand"]].reset_index(drop=True)
