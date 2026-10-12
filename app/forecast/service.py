@@ -21,8 +21,11 @@ from lightgbm import LGBMRegressor
 
 from app.ml.features import FEATURE_COLUMNS, build_features
 from app.ml.model import DEFAULT_PARAMS, build_training_table
+from app.shared.errors import InvalidForecastHorizonError
 
 MIN_HISTORY_DAYS = 30
+MIN_FORECAST_DAYS = 1
+MAX_FORECAST_DAYS = 14
 BASELINE_TAG = "baseline_moving_average_7"
 MODEL_TAG = "lightgbm"
 
@@ -44,6 +47,9 @@ class ForecastService:
     # --- публичное ------------------------------------------------------------
 
     def forecast(self, store_id: int, product_id: int, days: int) -> dict:
+        if not (MIN_FORECAST_DAYS <= days <= MAX_FORECAST_DAYS):
+            raise InvalidForecastHorizonError(days, MIN_FORECAST_DAYS, MAX_FORECAST_DAYS)
+
         history = self._loader()
         pair_history = history[
             (history["store_id"] == store_id)

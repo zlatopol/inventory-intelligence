@@ -73,6 +73,14 @@ class StoreService:
             raise StoreNotFoundError
         return store
 
+    def get_live_id_by_name(self, raw_name: str) -> int:
+        """Id живого магазина по обработанному имени (D-1); BR-1/NotFound — как везде."""
+        name = raw_name.strip()  # D-1
+        if not name:
+            raise EmptyNameError  # BR-1
+        store = self._get_live_or_raise(name)
+        return store.id
+
     def stock_by_store(self) -> list[tuple[Store, list[tuple[str, int]]]]:
         """FR-7: просмотреть информацию о товарах по магазинам.
 

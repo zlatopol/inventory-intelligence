@@ -8,7 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.forecast.schemas import ForecastRead, RetrainRead
-from app.forecast.service import ForecastService
+from app.forecast.service import (
+    MAX_FORECAST_DAYS,
+    MIN_FORECAST_DAYS,
+    ForecastService,
+)
 from app.ml.sources import load_from_stock_event
 from app.shared.db import get_session
 
@@ -45,7 +49,9 @@ def get_forecast_service(
 def get_forecast(
     store_id: int = Query(gt=0),
     product_id: int = Query(gt=0),
-    days: int = Query(default=3, ge=1, le=14),
+    days: int = Query(
+        default=3, ge=MIN_FORECAST_DAYS, le=MAX_FORECAST_DAYS
+    ),
     service: ForecastService = Depends(get_forecast_service),
 ) -> ForecastRead:
     try:

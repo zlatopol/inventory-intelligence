@@ -43,9 +43,3 @@ class ProductRepository:
             Product.id == id,
         )
         return self._session.scalars(stmt).first()
-
-    def find_id_by_name(self, name: str) -> int:
-        stmt = select(Product).where(
-            Product.name == name
-        )
-        return self._session.scalar(stmt).first()

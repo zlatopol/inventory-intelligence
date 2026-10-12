@@ -543,12 +543,39 @@ Known issue закрыт — и оказался глубже косметики
 Москвы; пустая БД) — **137/137**. Live smoke на сид-данных: полная сетка
 56 дн. × 12 пар = 672 строки, даты прогноза — наивные полуночи.
 
+## CLI пункт 12 «Прогноз спроса»: DONE (2026-10-12)
+
+Mentor Mode, developer-first: wiring, handler, сервисные методы и тесты написаны
+разработчиком под поэтапным ревью (4 раунда). Финальная сборка доведена совместно
+(вывод model/warning, константы в роутере, D-1/BR-1 в резолве имён, тесты).
+
+- резолв имён → id: тонкие read-методы `get_live_id_by_name` на StoreService/
+  ProductService (D-1 strip + BR-1 внутри, как у остальных операций) — CLI
+  ходит только в сервисы; NotFound ловит существующий DomainError-catch меню;
+- `ForecastService` собран в `build_services` с per-call загрузчиком (своя
+  сессия на вызов — паттерн API-роутера, симметрия дверей);
+- горизонт 1–14 стал инвариантом СЕРВИСА: `MIN/MAX_FORECAST_DAYS` +
+  параметризованный `InvalidForecastHorizonError` (errors.py — лист
+  dependency-дерева, без импортов); роутер импортирует константы;
+- вывод: даты-полночи, метка модели, warning baseline, склонение дней.
+
+Живые уроки ревью: вызов FastAPI-провайдера из CLI; методы в репозитории вместо
+сервиса; приватный метод снаружи класса; чужая сигнатура конструктора;
+`except Exception`; цикл по верхнему dict вместо result["forecast"]; импорт
+констант в errors.py → ImportError (цикл зависимостей); двойник, врущий о
+контракте; тест без «12» в стенограмме диалога → StopIteration в ЧУЖОМ handler'е
+(диалог FakeUI начинается с выбора пункта меню).
+
+Тесты: +2 на handler (резолв+вывод; LookupError — сообщение и выживание меню),
+тест меню 12→13 пунктов → **139/139**. Live smoke: прогноз на 3 дня,
+lightgbm, даты-полночи.
+
 ## Next step (Phase 3 backlog)
 
-1. CLI menu пункт 12 «Прогноз спроса» (store/product/days через ForecastService);
-2. Hypothesis-driven improvements (retrospective R3): holidays/calendar features
-   first, then hyperparameters, then multi-day horizon evaluation;
-3. Optional: scheduled retraining, MLflow server, forecast monitoring.
+1. Hypothesis-driven improvements (retrospective R3): holidays/calendar features
+   first, then hyperparameters, then multi-day horizon evaluation
+   (перед этим — повторить тему leakage, ML-ретроспектива R2);
+2. Optional: scheduled retraining, MLflow server, forecast monitoring.
 
 ## Repository notes
 

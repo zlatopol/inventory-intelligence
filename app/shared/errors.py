@@ -73,3 +73,11 @@ class InsufficientStockError(DomainError):
         super().__init__(
             "Количество товара на складе меньше количества заявки (BR-7)"
         )
+
+
+class InvalidForecastHorizonError(DomainError):
+    def __init__(self, days: int, min_days: int, max_days: int) -> None:
+        super().__init__(
+            f"Горизонт прогноза — целое число от {min_days} до {max_days} дней "
+            f"(получено: {days})"
+        )

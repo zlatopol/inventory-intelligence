@@ -95,3 +95,11 @@ class ProductService:
         if product is None:
             raise ProductNotFoundError
         return product
+
+    def get_live_id_by_name(self, raw_name: str) -> int:
+        """Id живого товара по обработанному имени (D-1); BR-1/NotFound — как везде."""
+        name = raw_name.strip()  # D-1
+        if not name:
+            raise EmptyNameError  # BR-1
+        product = self._get_live_or_raise(name)
+        return product.id

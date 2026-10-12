@@ -3,6 +3,7 @@
 Тестируется Presentation-слой: что CLI спросил, что передал в сервис, что показал.
 Бизнес-правила уже охраняются 92 тестами сервисов — здесь их НЕ дублируем.
 """
+from datetime import date
 from types import SimpleNamespace
 
 from app.cli import MENU, handle_add_product, run_menu
@@ -30,22 +31,55 @@ class FakeProducts:
 
     def __init__(self) -> None:
         self.create_calls: list[str] = []
+        self.id_calls: list[str] = []
         self._product = SimpleNamespace(name="Сахар", warehouse_quantity=0)
 
     def create_product(self, name: str):
         self.create_calls.append(name)
         return self._product
 
+    def get_live_id_by_name(self, name: str) -> int:
+        self.id_calls.append(name)
+        return 42  # int, как настоящий
 
-def make_services(products=None) -> SimpleNamespace:
+
+class FakeStores:
+    """Двойник StoreService: помнит вызовы, возвращает id."""
+
+    def __init__(self) -> None:
+        self.id_calls: list[str] = []
+
+    def get_live_id_by_name(self, name: str) -> int:
+        self.id_calls.append(name)
+        return 7  # int, как настоящий
+
+
+class FakeForecast:
+    """Двойник ForecastService: помнит вызовы, возвращает заготовку."""
+
+    def __init__(self, result: dict | None = None) -> None:
+        self.calls: list[tuple] = []
+        self._result = result
+
+    def forecast(self, store_id: int, product_id: int, days: int) -> dict:
+        self.calls.append((store_id, product_id, days))
+        return self._result
+
+
+class FailingForecast(FakeForecast):
+    """Двойник, чей forecast бросает LookupError (пары нет в истории)."""
+
+    def forecast(self, store_id: int, product_id: int, days: int) -> dict:
+        raise LookupError("В истории событий нет пары store=7, product=42")
+
+
+def make_services(products=None, stores=None, forecast=None) -> SimpleNamespace:
     return SimpleNamespace(
         products=products or FakeProducts(),
-        stores=object(),
+        stores=stores or FakeStores(),
         requests=object(),
+        forecast=forecast or FakeForecast(),
     )
-
-
-# --- ОБРАЗЕЦ (разбери его структуру: ARRANGE → ACT → ASSERT) -----------------
 
 
 def test_add_product_passes_raw_input_and_prints_product():
@@ -63,8 +97,6 @@ def test_add_product_passes_raw_input_and_prints_product():
     assert "Сахар" in ui.text()
     assert "0 шт." in ui.text()
 
-
-# --- ТВОИ ТЕСТЫ (переписаны по ревью: имена = поведение) ----------------------
 
 
 def test_ask_int_repeats_prompt_on_garbage_then_accepts_number():
@@ -120,11 +152,60 @@ def test_run_menu_zero_exits_without_service_calls():
     assert ui.text().count("СНАБЖЕНИЕ") == 1  # меню отрисовалось ровно один раз
 
 
-def test_menu_has_eleven_operations_plus_exit_with_distinct_handlers():
-    """Меню покрывает все 11 операций + выход; хэндлеры не дублируются."""
-    assert len(MENU) == 12
+def test_menu_has_twelve_operations_plus_exit_with_distinct_handlers():
+    """Меню покрывает все 12 операций + выход; хэндлеры не дублируются."""
+    assert len(MENU) == 13
     assert MENU["0"] == ("Выход", None)
 
     handlers = [handler for _, (_, handler) in MENU.items() if handler is not None]
-    assert len(handlers) == 11
-    assert len(set(handlers)) == 11  # дубль handler'а сломал бы эту строку
+    assert len(handlers) == 12
+    assert len(set(handlers)) == 12  # дубль handler'а сломал бы эту строку
+
+# --- Прогноз (пункт 12) -------------------------------------------------------
+
+
+def test_forecast_handler_resolves_names_and_prints_days_and_model():
+    """Пункт 12: имена → id → forecast(store, product, days); вывод — дни+модель."""
+    # ARRANGE: диалог = выбор пункта, ответы handler'а, выход
+    ui = FakeUI(["12", "  Магазин А ", "Товар Б", "3", "0"])
+    forecast = FakeForecast(
+        result={
+            "store_id": 7,
+            "product_id": 42,
+            "generated_at": date(2026, 10, 12),
+            "model": "lightgbm",
+            "warning": None,
+            "forecast": [
+                {"date": date(2026, 10, 13), "demand": 15.5},
+                {"date": date(2026, 10, 14), "demand": 18.0},
+            ],
+        }
+    )
+    services = make_services(forecast=forecast)
+
+    # ACT
+    run_menu(ui, services)
+
+    # ASSERT: резолв по именам, сервис получил именно id и горизонт
+    assert services.stores.id_calls == ["  Магазин А "]  # сырой ввод — D-1 в сервисе
+    assert services.products.id_calls == ["Товар Б"]
+    assert forecast.calls == [(7, 42, 3)]
+
+    # ASSERT: пользователь увидел прогноз и метку модели
+    assert "на 3 дня" in ui.text()
+    assert "модель: lightgbm" in ui.text()
+    assert "2026-10-13 — 15.5 шт." in ui.text()
+    assert "2026-10-14 — 18.0 шт." in ui.text()
+
+
+def test_forecast_handler_lookup_error_prints_and_menu_survives():
+    """Пары нет в истории: LookupError печатается локально, меню доживает до выхода."""
+    ui = FakeUI(["12", "Магазин А", "Товар Б", "3", "0"])
+    services = make_services(forecast=FailingForecast())
+
+    # ACT
+    run_menu(ui, services)
+
+    # ASSERT: сообщение видно И меню пережило ошибку (отрисовалось снова)
+    assert "! В истории событий нет пары" in ui.text()
+    assert ui.text().count("СНАБЖЕНИЕ") >= 2

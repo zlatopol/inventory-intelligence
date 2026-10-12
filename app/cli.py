@@ -133,6 +133,37 @@ def handle_store_stock(ui, services) -> None:
             ui.say(f"    {product_name} — {quantity} шт.")
 
 
+def _plural_days(n: int) -> str:
+    """1 день, 2–4 дня, 5+ дней (11–14 — всегда «дней»)."""
+    if n % 10 == 1 and n % 100 != 11:
+        return "день"
+    if 2 <= n % 10 <= 4 and not (12 <= n % 100 <= 14):
+        return "дня"
+    return "дней"
+
+
+def handle_forecast(ui, services) -> None:
+    """Пункт 12: прогноз спроса через ForecastService (Phase 3)."""
+    store_name = ui.ask("Название магазина: ")
+    product_name = ui.ask("Название товара: ")
+    days = ask_int(ui, "Горизонт прогноза (дней): ")
+    store_id = services.stores.get_live_id_by_name(store_name)
+    product_id = services.products.get_live_id_by_name(product_name)
+    try:
+        result = services.forecast.forecast(store_id, product_id, days)
+    except LookupError as exc:  # пары нет в истории — локально, не на всё меню
+        ui.say(f"! {exc}")
+        return
+    ui.say(
+        f"→ Прогноз спроса на {days} {_plural_days(days)} для {product_name} "
+        f"в магазине {store_name} (модель: {result['model']})"
+    )
+    for day in result["forecast"]:
+        ui.say(f"  {day['date']:%Y-%m-%d} — {day['demand']} шт.")
+    if result["warning"] is not None:  # честность: baseline при короткой истории
+        ui.say(f"! {result['warning']}")
+
+
 
 MENU = {
     "1": ("Добавить товар", handle_add_product),
@@ -146,6 +177,7 @@ MENU = {
     "9": ("Список заявок", handle_list_requests),
     "10": ("Товары на складе", handle_list_warehouse),
     "11": ("Товары по магазинам", handle_store_stock),
+    "12": ("Прогноз спроса", handle_forecast),
     "0": ("Выход", None),
 }
 
@@ -159,6 +191,18 @@ def build_services(session) -> SimpleNamespace:
     from app.requests.service import RequestService
     from app.stores.repository import StoreRepository
     from app.stores.service import StoreService
+    from app.forecast.service import ForecastService
+
+    from sqlalchemy.orm import sessionmaker
+    from app.ml.sources import load_from_stock_event
+    from app.shared.db import get_engine
+
+    factory = sessionmaker(bind=get_engine(), expire_on_commit=False)
+
+    def load_history():                     # своя сессия на каждый вызов
+        with factory() as s:
+            return load_from_stock_event(s)
+
 
     return SimpleNamespace(
         products=ProductService(
@@ -173,6 +217,9 @@ def build_services(session) -> SimpleNamespace:
             StoreRepository(session),
             StockEventRepository(session),
             session,
+        ),
+        forecast=ForecastService(
+            history_loader=load_history
         ),
     )
 
