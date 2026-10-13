@@ -81,3 +81,36 @@ class InvalidForecastHorizonError(DomainError):
             f"Горизонт прогноза — целое число от {min_days} до {max_days} дней "
             f"(получено: {days})"
         )
+
+
+class InvalidServiceLevelError(DomainError):
+    def __init__(self, service_level: float) -> None:
+        super().__init__(
+            f"Уровень сервиса — число строго между 0 и 1 "
+            f"(получено: {service_level})"
+        )
+
+
+class InvalidLeadTimeError(DomainError):
+    def __init__(self, lead_time_days: int) -> None:
+        super().__init__(
+            f"Время поставки — целое число дней, не меньше 1 "
+            f"(получено: {lead_time_days})"
+        )
+
+
+class InvalidPolicyHorizonError(DomainError):
+    def __init__(self, horizon_days: int) -> None:
+        super().__init__(
+            f"Горизонт обзора — целое число дней, не меньше 1 "
+            f"(получено: {horizon_days})"
+        )
+
+
+class InvalidReplenishmentWindowError(DomainError):
+    def __init__(self, lead_time_days: int, horizon_days: int, max_window: int) -> None:
+        super().__init__(
+            f"Сумма времени поставки и горизонта обзора не должна превышать "
+            f"{max_window} дней — доказанный горизонт модели "
+            f"(получено: {lead_time_days} + {horizon_days})"
+        )
