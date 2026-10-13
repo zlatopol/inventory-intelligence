@@ -6,6 +6,11 @@ CLI только спрашивает, показывает и ловит Domain
 """
 from types import SimpleNamespace
 
+from app.recommendations.policy import (
+    DEFAULT_HORIZON_DAYS,
+    DEFAULT_LEAD_TIME_DAYS,
+    DEFAULT_SERVICE_LEVEL,
+)
 from app.requests.schemas import _STATUS_RU  # DRY: перевод статусов уже существует
 from app.shared.errors import DomainError
 
@@ -26,6 +31,22 @@ def ask_int(ui, prompt: str) -> int:
         raw = ui.ask(prompt)
         try:
             return int(raw)
+        except ValueError:
+            ui.say(f"«{raw}» — не число, попробуйте ещё раз")
+
+
+def _ask_with_default(ui, prompt: str, default, parse):
+    """Пустой ввод = дефолт; мусор — переспрос (как ask_int, но с дефолтом).
+
+    Параметры политики (EX-2) меняются редко — спрашивать их без дефолта
+    означало бы шум в каждом диалоге.
+    """
+    while True:
+        raw = ui.ask(prompt).strip()
+        if not raw:
+            return default
+        try:
+            return parse(raw)
         except ValueError:
             ui.say(f"«{raw}» — не число, попробуйте ещё раз")
 
@@ -164,6 +185,53 @@ def handle_forecast(ui, services) -> None:
         ui.say(f"! {result['warning']}")
 
 
+def handle_recommendations(ui, services) -> None:
+    """Пункт 13: рекомендации по закупке через RecommendationService (EX-2).
+
+    Параметры — с дефолтами (пустой ввод = 0.95 / 3 / 7); DomainError политик
+    ловится общим catch меню (EL-3-сообщения уже готовы).
+    """
+    service_level = _ask_with_default(
+        ui, f"Уровень сервиса [{DEFAULT_SERVICE_LEVEL:g}]: ",
+        DEFAULT_SERVICE_LEVEL, float,
+    )
+    lead_time = _ask_with_default(
+        ui, f"Время поставки, дней [{DEFAULT_LEAD_TIME_DAYS}]: ",
+        DEFAULT_LEAD_TIME_DAYS, int,
+    )
+    horizon = _ask_with_default(
+        ui, f"Горизонт обзора, дней [{DEFAULT_HORIZON_DAYS}]: ",
+        DEFAULT_HORIZON_DAYS, int,
+    )
+    result = services.recommendations.recommendations(
+        service_level=service_level,
+        lead_time_days=lead_time,
+        horizon_days=horizon,
+    )
+    window = lead_time + horizon
+    ui.say(
+        f"→ Рекомендации по закупке на окно {window} {_plural_days(window)} "
+        f"(поставка {lead_time} + обзор {horizon})"
+    )
+    for row in result["recommendations"]:
+        name, stock = row["product_name"], row["warehouse_quantity"]
+        if row["status"] == "cold_start":
+            ui.say(f"  {name}: холодный старт — нет истории; остаток {stock} шт.")
+        elif row["status"] == "sufficient":
+            ui.say(
+                f"  {name}: достаточно — спрос {row['forecast_demand']}, "
+                f"остаток {stock} шт."
+            )
+        else:
+            ui.say(
+                f"  {name}: заказать {row['order_quantity']} шт. "
+                f"(спрос {row['forecast_demand']}, "
+                f"страховой запас {row['safety_stock']}, остаток {stock})"
+            )
+    if result["warning"] is not None:  # честность: baseline при короткой истории
+        ui.say(f"! {result['warning']}")
+
+
 
 MENU = {
     "1": ("Добавить товар", handle_add_product),
@@ -178,6 +246,7 @@ MENU = {
     "10": ("Товары на складе", handle_list_warehouse),
     "11": ("Товары по магазинам", handle_store_stock),
     "12": ("Прогноз спроса", handle_forecast),
+    "13": ("Рекомендации по закупке", handle_recommendations),
     "0": ("Выход", None),
 }
 
@@ -192,6 +261,7 @@ def build_services(session) -> SimpleNamespace:
     from app.stores.repository import StoreRepository
     from app.stores.service import StoreService
     from app.forecast.service import ForecastService
+    from app.recommendations.service import RecommendationService
 
     from sqlalchemy.orm import sessionmaker
     from app.ml.sources import load_from_stock_event
@@ -203,6 +273,7 @@ def build_services(session) -> SimpleNamespace:
         with factory() as s:
             return load_from_stock_event(s)
 
+    forecast = ForecastService(history_loader=load_history)
 
     return SimpleNamespace(
         products=ProductService(
@@ -218,8 +289,13 @@ def build_services(session) -> SimpleNamespace:
             StockEventRepository(session),
             session,
         ),
-        forecast=ForecastService(
-            history_loader=load_history
+        forecast=forecast,
+        recommendations=RecommendationService(
+            forecast=forecast,  # тот же экземпляр: общий кэш модели
+            history_loader=load_history,
+            products_loader=lambda: ProductRepository(
+                session
+            ).list_live_ordered_by_name(),
         ),
     )
 
