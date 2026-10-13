@@ -24,7 +24,12 @@ seasonal_naive_7       7.90   16.7%
 moving_average_7       7.67   16.2%
 lightgbm (50 pairs)    5.79   12.2%
 lightgbm (FULL 500)    6.01   11.5%      ← beats the baseline by 21.6% MAE
++holiday features      5.96   11.4%      ← injectable country calendar
 ```
+
+The 1–14 day horizon is **measured, not promised** (blocked evaluation:
+model stays flat to k=14 — MAE 5.5–6.9, week of recursion costs ~0.04;
+baselines decay — see `docs/img/horizon_degradation.png`).
 
 Every experiment is tracked in MLflow (`mlflow ui`), features are leak-safe by
 construction (see `app/ml/features.py`), hypotheses are grounded in
