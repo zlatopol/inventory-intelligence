@@ -5,7 +5,14 @@
 """
 import pandas as pd
 
-from app.ml.baseline import moving_average_forecast, naive_forecast, seasonal_naive_forecast, walk_forward_evaluate
+from app.ml.baseline import (
+    blocked_horizon_evaluate,
+    moving_average_forecast,
+    naive_forecast,
+    recursive_forecast,
+    seasonal_naive_forecast,
+    walk_forward_evaluate,
+)
 from app.ml.metrics import mae, wape
 
 
@@ -121,6 +128,86 @@ def test_metrics_by_hand():
     """Метрики на числах, проверяемых руками."""
     # MAE: |3−2| + |4−6| = 1 + 2, среднее = 1.5
     assert mae(pd.Series([3, 4]), pd.Series([2, 6])) == 1.5
+
+
+# --- Рекурсивный горизонт и блочная оценка (Phase 3) --------------------------
+
+
+def test_recursive_naive_freezes_last_value_for_all_days():
+    """naive + рекурсия: последнее значение 10 → все 14 дней = 10;
+    даты — подряд от последнего известного + 1."""
+    dataset = make_dataset(
+        [("2026-01-01", 1, 1, 3), ("2026-01-02", 1, 1, 10)]
+    )
+
+    result = recursive_forecast(dataset, naive_forecast, days=14)
+
+    assert len(result) == 14
+    assert (result["prediction"] == 10).all()  # «завтра=вчера» зациклился
+    assert list(result["date"]) == list(
+        pd.date_range("2026-01-03", periods=14)
+    )
+
+
+def test_recursive_seasonal_naive_repeats_frozen_week():
+    """k=8 читает ПРОГНОЗ k=1, а не будущее: последняя неделя [1..7]\n    замораживается и повторяется два цикла без контакта с реальностью."""
+    from datetime import date, timedelta
+
+    demands = [90, 80, 1, 2, 3, 4, 5, 6, 7]  # последние 7 дней = 1..7
+    dataset = make_dataset(
+        [
+            (str(date(2026, 1, 1) + timedelta(days=i)), 1, 1, d)
+            for i, d in enumerate(demands)
+        ]
+    )
+
+    result = recursive_forecast(dataset, seasonal_naive_forecast, days=14)
+
+    assert list(result["prediction"]) == [1, 2, 3, 4, 5, 6, 7] * 2
+
+
+def test_recursive_forecast_serves_all_pairs():
+    """РЕГРЕССИЯ iloc[0]: рекурсия обязана прогнозировать ВСЕ пары —\n    первая реализация обслуживала только первую пару из ответа модели."""
+    dataset = make_dataset(
+        [
+            ("2026-01-01", 1, 1, 5),
+            ("2026-01-02", 1, 1, 10),
+            ("2026-01-01", 2, 1, 7),
+            ("2026-01-02", 2, 1, 99),
+        ]
+    )
+
+    result = recursive_forecast(dataset, naive_forecast, days=3)
+
+    assert len(result) == 6  # 3 дня × 2 пары (не 3 строки только первой пары!)
+    pair_1 = result[result["store_id"] == 1]["prediction"]
+    pair_2 = result[result["store_id"] == 2]["prediction"]
+    assert (pair_1 == 10).all()
+    assert (pair_2 == 99).all()
+
+
+def test_blocked_horizon_freezes_history_strictly_before_anchor():
+    """Граница заморозки: мутация будущего (≥ якоря) НЕ меняет прогнозы.\n    Сломанная граница (<= вместо <) впустила бы будущее — тест взорвётся."""
+    from datetime import date, timedelta
+
+    start = date(2026, 1, 1)
+    dataset = make_dataset(
+        [
+            (str(start + timedelta(days=i)), 1, 1, i + 1) for i in range(30)
+        ]
+    )
+    anchor = pd.Timestamp("2026-01-25")
+
+    mutated = dataset.copy()
+    mask = mutated["date"] >= anchor
+    mutated.loc[mask, "demand"] = mutated.loc[mask, "demand"] * 100
+
+    clean = blocked_horizon_evaluate(dataset, naive_forecast, [anchor], days=4)
+    dirty = blocked_horizon_evaluate(mutated, naive_forecast, [anchor], days=4)
+
+    assert list(clean["prediction"]) == list(dirty["prediction"])  # заморожено
+    assert list(clean["actual"]) != list(dirty["actual"])  # мутация реально была
+    assert sorted(clean["k"].unique()) == [1, 2, 3, 4]  # горизонт 1..days
     # WAPE: (2+2) / (10+10) × 100 = 20%
     assert wape(pd.Series([10, 10]), pd.Series([8, 12])) == 20.0
     # факта нет совсем → inf (деление на ноль защищено)

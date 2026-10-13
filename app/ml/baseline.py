@@ -67,3 +67,63 @@ def walk_forward_evaluate(
     return pd.concat(rows, ignore_index=True)[
         ["date", "store_id", "product_id", "actual", "prediction"]
     ]
+
+def recursive_forecast(
+    history: pd.DataFrame,
+    forecast_next,
+    days: int,
+) -> pd.DataFrame:
+    """Рекурсивный горизонт над DataFrame-контрактом — ВСЕ пары сразу.
+
+    forecast_next(train) → [PAIR, prediction] на train.max(date)+1;
+    прогноз ДОПИСЫВАЕТСЯ в историю как demand (prediction → demand) —
+    и так days раз: день D+2 строится по истории, дополненной прогнозом D+1.
+    Выход: [date, PAIR, prediction] — days строк НА КАЖДУЮ пару,
+    даты подряд от history.max(date)+1.
+    """
+    extended = history.copy()
+    rows = []
+    last_date = history["date"].max()
+    for offset in range(1, days + 1):
+        target = last_date + pd.Timedelta(days=offset)
+        prediction = forecast_next(extended).assign(date=target)
+        rows.append(prediction[["date"] + PAIR + ["prediction"]])
+        extended = pd.concat(
+            [
+                extended,
+                prediction.rename(columns={"prediction": "demand"})[
+                    ["date"] + PAIR + ["demand"]
+                ],
+            ],
+            ignore_index=True,
+        )
+    return pd.concat(rows, ignore_index=True)
+
+
+def blocked_horizon_evaluate(
+    dataset: pd.DataFrame,
+    forecast_next,
+    anchors: list[pd.Timestamp],
+    days: int = 14,
+) -> pd.DataFrame:
+    """Блочная (эпизодическая) оценка рекурсивного горизонта.
+
+    Для каждого якоря T: история замораживается (строго < T — граница
+    утечки = момент прогноза), рекурсивный прогноз уходит на days дней,
+    каждый день сверяется с фактом. Выход: [anchor, k, date, PAIR, actual,
+    prediction]; k = 1..days — горизонт (1 = первый день после якоря).
+    """
+    rows = []
+    for anchor in anchors:
+        history = dataset[dataset["date"] < anchor]
+        actual = dataset[
+            (dataset["date"] >= anchor)
+            & (dataset["date"] < anchor + pd.Timedelta(days=days))
+        ][["date"] + PAIR + ["demand"]].rename(columns={"demand": "actual"})
+        predicted = recursive_forecast(history, forecast_next, days)
+        merged = actual.merge(predicted, on=["date"] + PAIR, how="left")
+        merged["k"] = (merged["date"] - anchor).dt.days + 1
+        rows.append(merged.assign(anchor=anchor))
+    return pd.concat(rows, ignore_index=True)[
+        ["anchor", "k", "date", "store_id", "product_id", "actual", "prediction"]
+    ]
