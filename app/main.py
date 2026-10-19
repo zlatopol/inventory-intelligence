@@ -61,11 +61,18 @@ def _status_for(error: DomainError) -> int:
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(title=settings.app_name)
-    app.include_router(products_router)
-    app.include_router(stores_router)
-    app.include_router(requests_router)
-    app.include_router(forecast_router)
-    app.include_router(recommendations_router)
+
+    # ADR-0009: the whole REST API lives under /api — the root namespace
+    # belongs to the SPA routes (one origin in prod, Vite proxy in dev).
+    # The loop makes forgetting the prefix impossible for future routers.
+    for router in (
+        products_router,
+        stores_router,
+        requests_router,
+        forecast_router,
+        recommendations_router,
+    ):
+        app.include_router(router, prefix="/api")
 
     @app.exception_handler(DomainError)
     async def domain_error_handler(_: Request, exc: DomainError) -> JSONResponse:

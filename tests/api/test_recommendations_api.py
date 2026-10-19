@@ -1,4 +1,4 @@
-"""API tests: /recommendations — контракт ответа и валидация (EX-2).
+"""API tests: /api/recommendations — контракт ответа и валидация (EX-2).
 
 Модель НЕ обучается: сервис рекомендаций подменяется целиком (паттерн
 test_forecast_api), внутри — реальный RecommendationService на db_session;
@@ -58,7 +58,7 @@ def seed_pair_history(session, product_quantity: int = 10) -> None:
 
 class TestContract:
     def test_empty_db_returns_empty_list(self, client):
-        response = client.get("/recommendations")
+        response = client.get("/api/recommendations")
 
         assert response.status_code == 200
         body = response.json()
@@ -71,7 +71,7 @@ class TestContract:
         db_session.add(Product(name="Соль", warehouse_quantity=7))
         db_session.commit()
 
-        body = client.get("/recommendations").json()
+        body = client.get("/api/recommendations").json()
 
         row = body["recommendations"][0]
         assert row["status"] == "cold_start"
@@ -83,7 +83,7 @@ class TestContract:
     ):
         seed_pair_history(db_session, product_quantity=0)
 
-        body = client.get("/recommendations").json()
+        body = client.get("/api/recommendations").json()
 
         row = body["recommendations"][0]
         assert row["status"] == "order"  # stock=0 → заказать точно надо
@@ -93,7 +93,7 @@ class TestContract:
         assert body["warning"] is not None  # честность: истории < 30 дней
 
     def test_unknown_product_id_filter_returns_empty_list(self, client):
-        response = client.get("/recommendations", params={"product_id": 999})
+        response = client.get("/api/recommendations", params={"product_id": 999})
 
         assert response.status_code == 200
         assert response.json()["recommendations"] == []
@@ -103,7 +103,7 @@ class TestValidation:
     def test_cross_rule_window_over_14_rejected_by_service(self, client):
         """L+H=15: Query по отдельности валиден, перекрёстное правило — сервис."""
         response = client.get(
-            "/recommendations",
+            "/api/recommendations",
             params={"lead_time_days": 8, "horizon_days": 7},
         )
 
@@ -117,12 +117,12 @@ class TestValidation:
             {"lead_time_days": 0},
             {"horizon_days": -1},
         ):
-            response = client.get("/recommendations", params=bad)
+            response = client.get("/api/recommendations", params=bad)
             assert response.status_code == 422, bad
 
     def test_max_window_boundary_is_accepted(self, client):
         response = client.get(
-            "/recommendations",
+            "/api/recommendations",
             params={"lead_time_days": 7, "horizon_days": 7},
         )
 

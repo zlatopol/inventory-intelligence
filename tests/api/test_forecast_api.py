@@ -1,4 +1,4 @@
-"""API tests: /forecast — контракт ответа и ошибки (без обучения модели)."""
+"""API tests: /api/forecast — контракт ответа и ошибки (без обучения модели)."""
 import pytest
 from fastapi.testclient import TestClient
 
@@ -23,7 +23,7 @@ def client(db_session):
 
 
 def test_unknown_pair_returns_404(client):
-    response = client.get("/forecast", params={"store_id": 1, "product_id": 1})
+    response = client.get("/api/forecast", params={"store_id": 1, "product_id": 1})
 
     assert response.status_code == 404
     assert "нет пары" in response.json()["detail"]
@@ -32,12 +32,12 @@ def test_unknown_pair_returns_404(client):
 def test_days_validation_bounds(client):
     for bad_days in (0, 15, -1):
         response = client.get(
-            "/forecast",
+            "/api/forecast",
             params={"store_id": 1, "product_id": 1, "days": bad_days},
         )
         assert response.status_code == 422  # Query(ge=1, le=14)
 
     ok = client.get(
-        "/forecast", params={"store_id": 1, "product_id": 1, "days": 1}
+        "/api/forecast", params={"store_id": 1, "product_id": 1, "days": 1}
     )
     assert ok.status_code == 404  # валидация прошла; упали уже в домене (нет пары)

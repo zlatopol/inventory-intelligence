@@ -32,7 +32,7 @@ model stays flat to k=14 — MAE 5.5–6.9, week of recursion costs ~0.04;
 baselines decay — see `docs/img/horizon_degradation.png`).
 
 - **Replenishment** (EX-2): order-up-to policy over forecasts —
-  `GET /recommendations` + CLI 13. The forecast becomes a purchasing
+  `GET /api/recommendations` + CLI 13. The forecast becomes a purchasing
   decision: Q = forecast + z·σ·√(L+H) − stock. Policy backtest (500 pairs,
   weekly review, L=3): fill rate 99.0% (no safety stock) → 100% (SL 0.95,
   stock ×1.21) → 100% (SL 0.99, ×1.31) — the price of service level is

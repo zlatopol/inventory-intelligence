@@ -26,7 +26,7 @@ def client(db_session):
 
 
 def test_create_product_returns_trimmed_name_and_zero_quantity(client):
-    response = client.post("/products", json={"name": "  Молоко  "})
+    response = client.post("/api/products", json={"name": "  Молоко  "})
 
     assert response.status_code == 201
     body = response.json()
@@ -35,15 +35,15 @@ def test_create_product_returns_trimmed_name_and_zero_quantity(client):
 
 
 def test_create_product_rejects_whitespace_only_name(client):
-    response = client.post("/products", json={"name": "   "})
+    response = client.post("/api/products", json={"name": "   "})
 
     assert response.status_code == 400  # BR-1 via EmptyNameError
     assert "BR-1" in response.json()["detail"]
 
 
 def test_create_product_rejects_duplicate_case_insensitive(client):
-    client.post("/products", json={"name": "Молоко"})
-    response = client.post("/products", json={"name": "молоко"})
+    client.post("/api/products", json={"name": "Молоко"})
+    response = client.post("/api/products", json={"name": "молоко"})
 
     assert response.status_code == 409  # BR-2
     assert "BR-2" in response.json()["detail"]
@@ -53,33 +53,33 @@ def test_create_product_rejects_duplicate_case_insensitive(client):
 
 
 def test_receive_increases_quantity(client):
-    client.post("/products", json={"name": "Сахар"})
+    client.post("/api/products", json={"name": "Сахар"})
 
-    response = client.post("/products/Сахар/receipts", json={"quantity": 5})
+    response = client.post("/api/products/Сахар/receipts", json={"quantity": 5})
 
     assert response.status_code == 200
     assert response.json()["warehouse_quantity"] == 5
 
 
 def test_receive_rejects_zero_quantity(client):
-    client.post("/products", json={"name": "Сахар"})
+    client.post("/api/products", json={"name": "Сахар"})
 
-    response = client.post("/products/Сахар/receipts", json={"quantity": 0})
+    response = client.post("/api/products/Сахар/receipts", json={"quantity": 0})
 
     assert response.status_code == 422  # BR-5 via InvalidReceiptQuantityError
     assert "BR-5" in response.json()["detail"]
 
 
 def test_receive_rejects_fractional_quantity_at_validation(client):
-    client.post("/products", json={"name": "Сахар"})
+    client.post("/api/products", json={"name": "Сахар"})
 
-    response = client.post("/products/Сахар/receipts", json={"quantity": 2.5})
+    response = client.post("/api/products/Сахар/receipts", json={"quantity": 2.5})
 
     assert response.status_code == 422  # Pydantic: not an integer at all
 
 
 def test_receive_unknown_product(client):
-    response = client.post("/products/Сахар/receipts", json={"quantity": 5})
+    response = client.post("/api/products/Сахар/receipts", json={"quantity": 5})
 
     assert response.status_code == 404  # EL-7
 
@@ -88,29 +88,29 @@ def test_receive_unknown_product(client):
 
 
 def test_delete_product_with_stock_blocked(client):
-    client.post("/products", json={"name": "Сахар"})
-    client.post("/products/Сахар/receipts", json={"quantity": 250})
+    client.post("/api/products", json={"name": "Сахар"})
+    client.post("/api/products/Сахар/receipts", json={"quantity": 250})
 
-    response = client.delete("/products/Сахар")
+    response = client.delete("/api/products/Сахар")
 
     assert response.status_code == 409  # BR-3
-    names = [p["name"] for p in client.get("/products").json()]
+    names = [p["name"] for p in client.get("/api/products").json()]
     assert names == ["Сахар"]  # list unchanged on rejection
 
 
 def test_delete_product_and_free_the_name(client):
-    client.post("/products", json={"name": "Сахар"})
+    client.post("/api/products", json={"name": "Сахар"})
 
-    assert client.delete("/products/Сахар").status_code == 204
-    names = [p["name"] for p in client.get("/products").json()]
+    assert client.delete("/api/products/Сахар").status_code == 204
+    names = [p["name"] for p in client.get("/api/products").json()]
     assert names == []  # gone from the live list
 
     # Soft delete frees the name (ADR-0005 partial index).
-    assert client.post("/products", json={"name": "сахар"}).status_code == 201
+    assert client.post("/api/products", json={"name": "сахар"}).status_code == 201
 
 
 def test_delete_unknown_product(client):
-    response = client.delete("/products/Сахар")
+    response = client.delete("/api/products/Сахар")
 
     assert response.status_code == 404
 
@@ -119,7 +119,7 @@ def test_delete_unknown_product(client):
 
 
 def test_list_empty_warehouse_is_not_an_error(client):
-    response = client.get("/products")
+    response = client.get("/api/products")
 
     assert response.status_code == 200
     assert response.json() == []
@@ -127,8 +127,8 @@ def test_list_empty_warehouse_is_not_an_error(client):
 
 def test_list_ordering_case_insensitive(client):
     for name in ["Яблоки", "ананас", "Банан"]:
-        client.post("/products", json={"name": name})
+        client.post("/api/products", json={"name": name})
 
-    names = [p["name"] for p in client.get("/products").json()]
+    names = [p["name"] for p in client.get("/api/products").json()]
 
     assert names == ["ананас", "Банан", "Яблоки"]  # EL-10
