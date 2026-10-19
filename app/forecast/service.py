@@ -124,6 +124,33 @@ class ForecastService:
             self._trained_at = datetime.now(UTC)
         return {"status": "retrained", "trained_at": self._trained_at}
 
+    def history(self, store_id: int, product_id: int, days: int = 28) -> dict:
+        """Фактический дневной спрос пары за последние `days` дней (EX-3).
+
+        Read-only данные для графика «факт + прогноз»: тот же history_loader,
+        что и у forecast() — один источник правды о прошлом. Хвост истории,
+        а не всё: графику нужен контекст перед прогнозом, не вся жизнь пары.
+        """
+        history = self._loader()
+        pair = history[
+            (history["store_id"] == store_id)
+            & (history["product_id"] == product_id)
+        ]
+        if pair.empty:
+            raise LookupError(  # роутер переведёт в 404 — как у forecast()
+                f"В истории событий нет пары store={store_id}, product={product_id}"
+            )
+        tail = pair.sort_values("date").tail(days)
+        return {
+            "store_id": store_id,
+            "product_id": product_id,
+            "days": len(tail),
+            "history": [
+                {"date": ts.to_pydatetime(), "demand": int(row)}
+                for ts, row in zip(tail["date"], tail["demand"])
+            ],
+        }
+
     # --- внутреннее -----------------------------------------------------------
 
     def _ensure_model(self, history: pd.DataFrame) -> None:

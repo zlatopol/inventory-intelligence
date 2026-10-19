@@ -7,7 +7,7 @@ POST /forecast/retrain                   — ручное переобучени
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.forecast.schemas import ForecastRead, RetrainRead
+from app.forecast.schemas import ForecastRead, HistoryRead, RetrainRead
 from app.forecast.service import (
     MAX_FORECAST_DAYS,
     MIN_FORECAST_DAYS,
@@ -59,6 +59,21 @@ def get_forecast(
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return ForecastRead.model_validate(result)
+
+
+@router.get("/history", response_model=HistoryRead)
+def get_history(
+    store_id: int = Query(gt=0),
+    product_id: int = Query(gt=0),
+    days: int = Query(default=28, ge=1, le=120),
+    service: ForecastService = Depends(get_forecast_service),
+) -> HistoryRead:
+    """EX-3: хвост фактического спроса пары — контекст для графика прогноза."""
+    try:
+        result = service.history(store_id, product_id, days)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return HistoryRead.model_validate(result)
 
 
 @router.post("/retrain", response_model=RetrainRead)

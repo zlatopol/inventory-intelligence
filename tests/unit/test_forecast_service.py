@@ -94,3 +94,30 @@ def test_model_reused_within_ttl():
     service.forecast(store_id=1, product_id=1, days=1)
 
     assert service._trained_at == trained_at  # TTL не истёк — модель та же
+
+
+class TestHistory:
+    def test_history_returns_tail_sorted_with_day_count(self):
+        service = service_for(days=40)
+
+        result = service.history(store_id=1, product_id=1, days=7)
+
+        assert result["days"] == 7
+        dates = [day["date"] for day in result["history"]]
+        assert dates == sorted(dates)  # хвост по возрастанию дат
+        assert result["history"][-1]["demand"] == int(
+            make_history(40)["demand"].iloc[-1]
+        )  # последний день факта — последняя строка истории
+
+    def test_history_days_larger_than_span_returns_everything(self):
+        service = service_for(days=10)
+
+        result = service.history(store_id=1, product_id=1, days=120)
+
+        assert result["days"] == 10  # всё, что есть — не ошибка
+
+    def test_history_unknown_pair_raises_lookup_error(self):
+        service = service_for(days=40)
+
+        with pytest.raises(LookupError, match="нет пары"):
+            service.history(store_id=99, product_id=99, days=7)

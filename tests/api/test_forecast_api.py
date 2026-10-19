@@ -41,3 +41,21 @@ def test_days_validation_bounds(client):
         "/api/forecast", params={"store_id": 1, "product_id": 1, "days": 1}
     )
     assert ok.status_code == 404  # валидация прошла; упали уже в домене (нет пары)
+
+
+def test_history_unknown_pair_returns_404(client):
+    response = client.get(
+        "/api/forecast/history", params={"store_id": 1, "product_id": 1}
+    )
+
+    assert response.status_code == 404
+    assert "нет пары" in response.json()["detail"]
+
+
+def test_history_days_validation_bounds(client):
+    for bad_days in (0, 121):
+        response = client.get(
+            "/api/forecast/history",
+            params={"store_id": 1, "product_id": 1, "days": bad_days},
+        )
+        assert response.status_code == 422  # Query(ge=1, le=120)
