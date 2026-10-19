@@ -1,0 +1,362 @@
+/* Палитра №4745 (color.romanuke.com) — роли согласованы на Стадии 2:
+   тёмный каркас + светлый контент; семантические цвета добавлены
+   дисциплинированно (success/error вне художественной палитры). */
+:root {
+  --bg-app: #0f050d;       /* сайдбар — почти чёрный с пурпуром */
+  --bg-panel: #412151;     /* панели на тёмном, активный пункт */
+  --accent-soft: #a9537f;  /* границы, ховеры, вторичный акцент */
+  --accent: #df7694;       /* главный акцент: кнопки, ссылки, «заказать» */
+  --highlight: #f1caa7;    /* подсветки: warning, hover строк, pending */
+  --bg-content: #fbf6f0;   /* фон контентной области — тёплый почти-белый */
+  --bg-card: #ffffff;
+  --text-dark: #2b2129;    /* текст на светлом */
+  --text-light: #f5edf2;   /* текст на тёмном */
+  --text-muted: #8a7a85;
+  --success: #3e7c59;
+  --error: #b3423a;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(43, 33, 41, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--text-dark);
+  background: var(--bg-content);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* --- каркас: сайдбар + контент ---------------------------------- */
+.app {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--bg-app);
+  color: var(--text-light);
+  padding: 20px 14px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar .brand {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 6px 10px 18px;
+  color: var(--highlight);
+}
+
+.sidebar a {
+  color: var(--text-light);
+  text-decoration: none;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar a:hover {
+  background: var(--bg-panel);
+}
+
+.sidebar a.active {
+  background: var(--bg-panel);
+  color: var(--highlight);
+}
+
+.content {
+  padding: 28px 36px 48px;
+  max-width: 1100px;
+}
+
+/* --- типографика и карточки -------------------------------------- */
+h1 {
+  font-size: 24px;
+  margin: 0 0 4px;
+}
+
+h2 {
+  font-size: 17px;
+  margin: 28px 0 10px;
+}
+
+.page-sub {
+  color: var(--text-muted);
+  margin: 0 0 20px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid rgba(169, 83, 127, 0.18);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+/* --- таблицы ------------------------------------------------------ */
+table.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  border-bottom: 2px solid rgba(169, 83, 127, 0.25);
+}
+
+.table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(169, 83, 127, 0.12);
+}
+
+.table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(241, 202, 167, 0.18);
+}
+
+.table tr.row-order {
+  background: rgba(223, 118, 148, 0.12);
+}
+
+.table tr.row-order:hover {
+  background: rgba(223, 118, 148, 0.2);
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- формы -------------------------------------------------------- */
+form.inline {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+label.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+input,
+select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid rgba(169, 83, 127, 0.4);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--text-dark);
+  min-width: 140px;
+  transition: border-color 0.15s ease;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* --- кнопки ------------------------------------------------------- */
+button {
+  font: inherit;
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+button.primary:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+button.danger {
+  background: transparent;
+  color: var(--error);
+  border: 1px solid var(--error);
+  padding: 5px 12px;
+  font-size: 13px;
+}
+
+button.danger:hover:not(:disabled) {
+  background: rgba(179, 66, 58, 0.08);
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--accent-soft);
+  border: 1px solid var(--accent-soft);
+  padding: 5px 12px;
+  font-size: 13px;
+}
+
+button.ghost:hover:not(:disabled) {
+  background: rgba(169, 83, 127, 0.1);
+}
+
+/* --- баннеры, бейджи, пустые состояния ---------------------------- */
+.banner {
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.banner.error {
+  background: rgba(179, 66, 58, 0.1);
+  border-left: 4px solid var(--error);
+  color: var(--error);
+}
+
+.banner.warning {
+  background: rgba(241, 202, 167, 0.35);
+  border-left: 4px solid var(--accent);
+  color: #6b4d33;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge.pending {
+  background: var(--highlight);
+  color: #5a4632;
+}
+
+.badge.done {
+  background: rgba(62, 124, 89, 0.15);
+  color: var(--success);
+}
+
+.badge.order {
+  background: rgba(223, 118, 148, 0.2);
+  color: #a03a5e;
+}
+
+.badge.sufficient {
+  background: rgba(62, 124, 89, 0.15);
+  color: var(--success);
+}
+
+.badge.cold {
+  background: rgba(138, 122, 133, 0.18);
+  color: var(--text-muted);
+}
+
+.empty {
+  color: var(--text-muted);
+  padding: 22px 0;
+  text-align: center;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+/* --- модалка ------------------------------------------------------ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 5, 13, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  max-width: 420px;
+  width: 92%;
+  box-shadow: 0 8px 30px rgba(15, 5, 13, 0.35);
+}
+
+.modal .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* --- тост --------------------------------------------------------- */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--success);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  animation: toast-in 0.2s ease;
+  z-index: 60;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- спиннер ------------------------------------------------------ */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(169, 83, 127, 0.25);
+  border-top-color: var(--accent-soft);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 30px auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
