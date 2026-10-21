@@ -7,9 +7,11 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-# docs: everything except img/ (the image is served by the API, ADR-0009)
+# docs: everything except img/ (the image is served by the API, ADR-0009);
+# ui-*.png are README assets — the app never serves them
 docs/*
 !docs/img/
+docs/img/ui-*.png
 scripts/
 tests/
 .env

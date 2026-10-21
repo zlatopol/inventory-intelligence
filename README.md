@@ -15,6 +15,9 @@ project built on top of an educational assignment (СПбГЭТУ «Технол
   through three doors: API, CLI menu, tests — domain-first packages, ADR-driven;
 - **Event history**: append-only `stock_event` journal (ADR-0006) — ground truth
   for the ML track;
+- **Web UI** (EX-3): React + TypeScript SPA — all 11 operations, forecast chart,
+  replenishment table, ML analytics; thin client over the same API (ADR-0008),
+  single origin — FastAPI serves the built bundle (ADR-0009).
 - **ML track**: demand dataset over events/Kaggle CSV → baselines → LightGBM:
 
 ```text
@@ -42,6 +45,21 @@ Every experiment is tracked in MLflow (`mlflow ui`), features are leak-safe by
 construction (see `app/ml/features.py`), hypotheses are grounded in
 `docs/img/` exploration charts.
 
+## Web UI
+
+Six screens (dark sidebar №4745): склад (FR-1/2/5/6), магазины + товары по
+магазинам (FR-3/4/7/11), заявки (FR-8/9/10), прогноз, рекомендации, аналитика.
+
+| Склад — список, поступление | Прогноз — факт + рекурсивный горизонт |
+|---|---|
+| ![Склад](docs/img/ui-warehouse.png) | ![Прогноз](docs/img/ui-forecast.png) |
+
+| Рекомендации — order-up-to | Аналитика — метрики и методология |
+|---|---|
+| ![Рекомендации](docs/img/ui-recommendations.png) | ![Аналитика](docs/img/ui-analytics.png) |
+
+Also: [магазины](docs/img/ui-stores.png), [заявки](docs/img/ui-requests.png).
+
 ## Quick start
 
 ```bash
@@ -59,13 +77,23 @@ python3 -m venv .venv
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-API docs: http://127.0.0.1:8000/docs
+API docs: http://127.0.0.1:8000/docs — the API also serves the last built SPA
+(`frontend/dist`, if present) at the root.
+
+Frontend dev mode (hot reload, `/api` proxied to the API — one origin, no CORS):
+
+```bash
+cd frontend
+npm ci
+npm run dev   # http://127.0.0.1:5173
+```
 
 ## Tests
 
 ```bash
 docker compose up -d db   # integration/API tests need PostgreSQL
-.venv/bin/pytest
+.venv/bin/pytest           # backend: unit + integration + API
+cd frontend && npm test    # frontend: vitest
 ```
 
 ## Demo
@@ -91,5 +119,9 @@ in messages), exit with `0`.
 ## Full stack (Docker)
 
 ```bash
-docker compose up --build -d    # api (migrations + uvicorn) + postgres
+docker compose up --build -d    # postgres + api (migrations, /api, SPA, /img)
 ```
+
+One multi-stage image (ADR-0009): a Node stage builds the SPA, the Python stage
+ships the API with the built bundle — no Node in the runtime image. UI:
+http://127.0.0.1:8000
