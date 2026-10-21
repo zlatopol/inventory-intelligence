@@ -7,3 +7,9 @@ pydantic>=2.7
 pydantic-settings>=2.3
 holidays>=0.106
 pandas>=2.2
+# ForecastService импортирует LGBMRegressor на уровне модуля (Phase 3:
+# model as a service) — с 2026-10-09 это API-рантайм, не только ML-трек
+lightgbm>=4.3
+# LGBMRegressor — sklearn-API: без scikit-learn lightgbm падает в рантайме
+# (в dev он приезжал транзитивно через mlflow, худой образ вскрыл пробел)
+scikit-learn>=1.5

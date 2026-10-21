@@ -7,8 +7,18 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-docs/
+# docs: everything except img/ (the image is served by the API, ADR-0009)
+docs/*
+!docs/img/
 scripts/
 tests/
 .env
 .DS_Store
+# Local data & experiment artifacts: never COPYed into the image, but the
+# whole context is sent to the daemon on every build (mlartifacts ≈ 179 MB).
+data/
+mlartifacts/
+mlflow.db
+# Frontend: rebuilt inside the image (stage 1) — local artifacts stay out
+frontend/node_modules/
+frontend/dist/
