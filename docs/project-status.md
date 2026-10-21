@@ -1,10 +1,14 @@
 # Project Status
 
-Last updated: 2026-10-13
+Last updated: 2026-10-21
 
 ## Current phase
 
-**Phase 3 — Model as a service** (in progress).
+**Phase 4 — Web UI (EX-3)** (wrap-up: steps 0–13 done, осталась ретроспектива).
+
+**Phase 3 — Model as a service: COMPLETE** (forecast/retrain API, CLI 12,
+holiday features, blocked horizon evaluation, replenishment EX-2 — записи ниже;
+отдельной ретроспективы не было: уроки зафиксированы внутри срезов).
 
 **Phase 2 — Extensions toward ML: COMPLETE (2026-10-08, v0.2.0).** Event history,
 CI, Docker, seed, dataset contracts, baselines, MLflow, Kaggle stage, LightGBM
@@ -684,10 +688,43 @@ level (оговорено в docstring) + цель W=10 перекрывает �
 pytest.raises чувствительны к регистру («Время поставки» vs «время
 поставки» — два красных прогона из-за заглавной буквы).
 
-## Next step (Phase 3 backlog)
+## Phase 4 — Web UI (EX-3): шаги 0–13 DONE (2026-10-21)
 
-1. Frontend — последний срез проекта (согласовано 2026-10-13): после него
-   ретроспектива Phase 3 и закрытие документации;
+Обсуждение закрыто 2026-10-19 (6 стадий): React+TS+Vite, палитра №4745 (тёмный
+сайдбар + светлый контент), read-write тонкий клиент (**ADR-0008**), single origin:
+FastAPI раздаёт собранный бандл, в dev — Vite proxy (**ADR-0009**), Chart.js,
+re-fetch после мутаций, полный UI всех 11 операций (требование преподавателя).
+
+- **0–3**: EX-3 в requirements §8 + ADR-0008/0009; `feat!:` REST под `/api`
+  (196→192 теста — часть контрактов была route-level); `GET /api/forecast/history`
+  (хвост факта для графика); `/img` + SPA-fallback (`SPAStaticFiles`; урок:
+  `StaticFiles` бросает starlette-`HTTPException` — fastapi-подкласс его НЕ
+  ловит, ловить надо родителя);
+- **4–10**: скаффолд frontend/ (сайдбар, api-клиент, shared-компоненты) + 6
+  страниц: склад (FR-1/2/5/6), магазины + FR-7 секцией (FR-3/4/7/11), заявки
+  (FR-8/9/10), прогноз (факт+прогноз Chart.js, пунктир baseline, retrain),
+  рекомендации (параметры политики, бейджи статусов), аналитика (пайплайн,
+  таблицы метрик, методологические графики из /img). 18 vitest-тестов;
+- **11**: multi-stage Docker — node:22-slim собирает SPA, python:3.13-slim
+  раздаёт (Node в runtime-образе нет); `libgomp1` для LightGBM (slim без
+  OpenMP); lightgbm+scikit-learn перенесены в runtime-депы — ForecastService
+  импортирует LGBMRegressor на уровне модуля (худой образ вскрыл пробел:
+  в dev scikit-learn приезжал транзитивно через mlflow); контекст сборки
+  почищен (mlartifacts 179 МБ в .dockerignore; ui-скриншоты — README-актив,
+  в образ не попадают). Smoke живым прогоном: SPA, fallback на /forecast,
+  JSON-404 в /api, /img, POST/DELETE сквозь контейнер, lgbm import — все
+  зелёные; 196 pytest;
+- **12**: CI job `frontend` (npm ci → tsc+vite build → vitest), параллелен
+  backend-job; CI зелёный;
+- **13**: README — галерея скриншотов `docs/img/ui-*.png`, dev-режим фронтенда
+  (порт 5173, proxy /api), полный стек одной командой.
+
+Осталось: ретроспектива Phase 4 (+ менторский долг — разбор концепций
+React/props/state/effect, Vite proxy, TS-типы — если ещё не отдан).
+
+## Next step
+
+1. Phase 4 retrospective (R1–R3) и закрытие документации;
 2. Parked: hyperparameters (R3), scheduled retraining, MLflow server,
    forecast monitoring.
 
