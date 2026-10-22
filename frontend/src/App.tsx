@@ -16,7 +16,7 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="brand">СНАБЖЕНИЕ</div>
-        <nav>
+        <nav className="nav-links">
           <NavLink to="/">Склад</NavLink>
           <NavLink to="/stores">Магазины</NavLink>
           <NavLink to="/requests">Заявки</NavLink>
