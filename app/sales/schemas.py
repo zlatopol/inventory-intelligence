@@ -35,3 +35,9 @@ class SaleReversalRead(BaseModel):
     sale_id: int
     reversal_event_id: int
     store_stock: int
+
+
+class SaleProductOption(BaseModel):
+    product_id: int
+    product_name: str
+    quantity: int
