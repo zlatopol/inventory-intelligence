@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { Product, Sale, SaleProductOption, Store } from "../api/types";
 import { ErrorBanner } from "../components/banners";
@@ -53,7 +53,6 @@ export default function SalesPage() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const selectedStore = stores.find((s) => s.id === Number(storeId));
   const selectedProduct = saleProducts.find((p) => p.product_id === Number(productId));
   const availableStock = selectedProduct?.quantity ?? 0;
 
