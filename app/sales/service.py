@@ -120,6 +120,10 @@ class SaleService:
             raise
         return reversal, stock.quantity
 
+    def get_reversal_id(self, sale_id: int) -> int | None:
+        reversal = self._repo.get_reversal_for(sale_id)
+        return reversal.id if reversal else None
+
     def get_live_names(self, store_id: int, product_id: int) -> tuple[str, str]:
         store = self._repo.get_live_store(store_id)
         product = self._repo.get_live_product(product_id)
