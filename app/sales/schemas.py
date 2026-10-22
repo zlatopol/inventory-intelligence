@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 class SaleCreate(BaseModel):
@@ -7,6 +7,13 @@ class SaleCreate(BaseModel):
     product_id: int = Field(gt=0)
     quantity: int = Field(gt=0, strict=True)
     sold_at: datetime
+
+    @field_validator("sold_at")
+    @classmethod
+    def require_timezone(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("Дата продажи должна содержать часовой пояс")
+        return value
 
 
 class SaleRead(BaseModel):
