@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
-import type { Product, Sale, Store, StoreStock } from "../api/types";
+import type { Product, Sale, SaleProductOption, Store } from "../api/types";
 import { ErrorBanner } from "../components/banners";
 import { ConfirmModal, Toast, useToast } from "../components/Modal";
 import { EmptyState, Spinner } from "../components/states";
@@ -20,7 +20,7 @@ export default function SalesPage() {
   const [sales, setSales] = useState<Sale[] | null>(null);
   const [stores, setStores] = useState<Store[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [stockByStore, setStockByStore] = useState<StoreStock[]>([]);
+  const [saleProducts, setSaleProducts] = useState<SaleProductOption[]>([]);
   const [storeId, setStoreId] = useState("");
   const [productId, setProductId] = useState("");
   const [quantity, setQuantity] = useState("1");
@@ -37,15 +37,13 @@ export default function SalesPage() {
 
   const load = useCallback(async () => {
     try {
-      const [storeList, productList, stock, saleList] = await Promise.all([
+      const [storeList, productList, saleList] = await Promise.all([
         api.get<Store[]>("/stores"),
         api.get<Product[]>("/products"),
-        api.get<StoreStock[]>("/stores/stock"),
         api.get<Sale[]>("/sales"),
       ]);
       setStores(storeList);
       setProducts(productList);
-      setStockByStore(stock);
       setSales(saleList);
       setError(null);
     } catch (e) {
@@ -56,12 +54,21 @@ export default function SalesPage() {
   useEffect(() => { void load(); }, [load]);
 
   const selectedStore = stores.find((s) => s.id === Number(storeId));
-  const selectedProduct = products.find((p) => p.id === Number(productId));
-  const availableStock = useMemo(() => {
-    if (!selectedStore || !selectedProduct) return 0;
-    return stockByStore.find((s) => s.name === selectedStore.name)?.products
-      .find((p) => p.name === selectedProduct.name)?.quantity ?? 0;
-  }, [selectedStore, selectedProduct, stockByStore]);
+  const selectedProduct = saleProducts.find((p) => p.product_id === Number(productId));
+  const availableStock = selectedProduct?.quantity ?? 0;
+
+  useEffect(() => {
+    setProductId("");
+    if (!storeId) {
+      setSaleProducts([]);
+      return;
+    }
+    let cancelled = false;
+    api.get<SaleProductOption[]>(`/sales/products?store_id=${storeId}`)
+      .then((items) => { if (!cancelled) setSaleProducts(items); })
+      .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : "Не удалось загрузить остатки магазина"); });
+    return () => { cancelled = true; };
+  }, [storeId]);
 
   async function submitSale(e: FormEvent) {
     e.preventDefault();
@@ -135,8 +142,8 @@ export default function SalesPage() {
       <ErrorBanner message={error} />
       <div className="card">
         <h2 style={{ marginTop: 0 }}>Новая продажа</h2>
-        {stores.length === 0 || products.length === 0 ? (
-          <p className="muted">Для регистрации нужны хотя бы один магазин и один товар.</p>
+        {stores.length === 0 ? (
+          <p className="muted">Для регистрации нужен хотя бы один магазин.</p>
         ) : (
           <form className="inline" onSubmit={submitSale}>
             <label className="field" htmlFor="sale-store">Магазин
@@ -148,12 +155,10 @@ export default function SalesPage() {
             <label className="field" htmlFor="sale-product">Товар
               <select id="sale-product" value={productId} onChange={(e) => setProductId(e.target.value)} required>
                 <option value="" disabled>выберите товар</option>
-                {products.map((p) => {
-                  const available = stockByStore.find((s) => s.name === selectedStore?.name)?.products.find((x) => x.name === p.name)?.quantity ?? 0;
-                  return <option key={p.id} value={p.id}>{p.name} — остаток {available} шт.</option>;
-                })}
+                {saleProducts.map((p) => <option key={p.product_id} value={p.product_id}>{p.product_name} — остаток {p.quantity} шт.</option>)}
               </select>
             </label>
+            {storeId && saleProducts.length === 0 && <p className="muted" style={{ margin: 0 }}>В выбранном магазине нет товаров с положительным остатком.</p>}
             <label className="field" htmlFor="sale-qty">Количество
               <input id="sale-qty" type="number" min={1} step={1} max={availableStock || undefined} value={quantity}
                 onChange={(e) => setQuantity(e.target.value)} required />
