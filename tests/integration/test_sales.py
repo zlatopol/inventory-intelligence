@@ -88,3 +88,29 @@ def test_reversal_returns_quantity_and_can_only_happen_once(db_session):
         service(db_session).reverse_sale(sale.id)
 
     assert stock.quantity == 5
+
+
+def test_delisted_product_with_store_stock_remains_available_for_sale(db_session):
+    product, store, stock = setup_stock(db_session, quantity=4)
+    product.deleted_at = datetime.now(UTC)
+    db_session.commit()
+
+    options = service(db_session).list_store_sale_products(store.id)
+    assert [(item.id, quantity) for item, quantity in options] == [(product.id, 4)]
+
+    event = service(db_session).register_sale(
+        store.id, product.id, 2, datetime.now(UTC), "test-delisted-sale"
+    )
+    assert event.product_id == product.id
+    assert db_session.get(StoreProduct, (store.id, product.id)).quantity == 2
+
+
+def test_sale_product_options_exclude_products_without_store_stock(db_session):
+    product, store, stock = setup_stock(db_session, quantity=2)
+    no_stock_product = Product(name="Чай", warehouse_quantity=20)
+    db_session.add(no_stock_product)
+    db_session.commit()
+
+    options = service(db_session).list_store_sale_products(store.id)
+    assert [item.id for item, _quantity in options] == [product.id]
+    assert all(quantity > 0 for _item, quantity in options)
