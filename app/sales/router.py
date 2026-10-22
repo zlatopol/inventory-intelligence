@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Header, Query
 from sqlalchemy.orm import Session
 
 from app.sales.repository import SaleRepository
-from app.sales.schemas import SaleCreate, SaleRead, SaleReversalRead
+from app.sales.schemas import SaleCreate, SaleProductOption, SaleRead, SaleReversalRead
 from app.sales.service import SaleService
 from app.shared.db import get_session
 
@@ -30,6 +30,18 @@ def _read_sale(event, store_name: str, product_name: str, reversal_id: int | Non
         status="cancelled" if reversal_id is not None else "active",
         reversal_event_id=reversal_id,
     )
+
+
+@router.get("/products", response_model=list[SaleProductOption])
+def list_store_sale_products(
+    store_id: int = Query(gt=0),
+    service: SaleService = Depends(get_sale_service),
+) -> list[SaleProductOption]:
+    """Только товары с положительным остатком в выбранном магазине."""
+    return [
+        SaleProductOption(product_id=product.id, product_name=product.name, quantity=quantity)
+        for product, quantity in service.list_store_sale_products(store_id)
+    ]
 
 
 @router.post("", response_model=SaleRead, status_code=201)
