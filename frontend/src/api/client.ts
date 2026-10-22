@@ -21,12 +21,12 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`${BASE}${path}`, {
       method,
-      headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
+      headers: { ...(body !== undefined ? { "Content-Type": "application/json" } : {}), ...extraHeaders },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
@@ -65,5 +65,6 @@ export function namePath(name: string): string {
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  postWithHeaders: <T>(path: string, body: unknown, headers: Record<string, string>) => request<T>("POST", path, body, headers),
   del: (path: string) => request<void>("DELETE", path),
 };
