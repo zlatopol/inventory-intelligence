@@ -1,19 +1,8 @@
-"""StockEvent — append-only event journal (Phase 2, ADR-0006 Q1–Q3).
-
-One table for both flows: store_id is NULL for receipts («неприменимо»);
-request_number is a snapshot, not an FK (an event is a witness of the past);
-no deleted_at — events are never deleted or updated.
-"""
+"""Append-only stock movement journal shared by receipts, shipments and sales."""
 from datetime import datetime
 
 from sqlalchemy import (
-    BigInteger,
-    CheckConstraint,
-    DateTime,
-    ForeignKey,
-    Integer,
-    Text,
-    func,
+    BigInteger, CheckConstraint, DateTime, ForeignKey, Integer, Text, func, text
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -25,7 +14,15 @@ class StockEvent(Base):
     __table_args__ = (
         CheckConstraint("quantity > 0", name="event_quantity_positive"),
         CheckConstraint(
-            "event_type IN ('receipt', 'shipment')", name="event_type_valid"
+            "event_type IN ('receipt', 'shipment', 'sale', 'sale_reversal')",
+            name="event_type_valid",
+        ),
+        CheckConstraint(
+            "(event_type IN ('receipt', 'shipment') AND sold_at IS NULL) OR "
+            "(event_type = 'sale' AND sold_at IS NOT NULL AND store_id IS NOT NULL) OR "
+            "(event_type = 'sale_reversal' AND sold_at IS NULL AND store_id IS NOT NULL "
+            "AND reversal_of_event_id IS NOT NULL)",
+            name="event_sale_fields_consistent",
         ),
     )
 
@@ -42,3 +39,13 @@ class StockEvent(Base):
     occurred_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+    sold_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    idempotency_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reversal_of_event_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("stock_event.id"), nullable=True
+    )
+
+    @property
+    def created_at(self) -> datetime:
+        """Backward-compatible API name for the immutable event registration time."""
+        return self.occurred_at

@@ -27,6 +27,13 @@ export interface StoreStock {
 
 export type RequestStatus = "подана" | "обработана";
 
+export interface Sale {
+  id: number; store_id: number; store_name: string; product_id: number; product_name: string;
+  quantity: number; sold_at: string; created_at: string;
+  status: "active" | "cancelled"; reversal_event_id: number | null;
+}
+export interface SaleReversal { sale_id: number; reversal_event_id: number; store_stock: number; }
+
 export interface StoreRequest {
   number: number;
   status: RequestStatus;
