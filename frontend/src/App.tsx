@@ -5,6 +5,7 @@ import ProductsPage from "./pages/ProductsPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import RequestsPage from "./pages/RequestsPage";
 import StoresPage from "./pages/StoresPage";
+import SalesPage from "./pages/SalesPage";
 
 /**
  * Каркас приложения: тёмный сайдбар (палитра №4745) + контентная область.
@@ -20,6 +21,7 @@ export default function App() {
           <NavLink to="/">Склад</NavLink>
           <NavLink to="/stores">Магазины</NavLink>
           <NavLink to="/requests">Заявки</NavLink>
+          <NavLink to="/sales">Продажи</NavLink>
           <NavLink to="/forecast">Прогноз</NavLink>
           <NavLink to="/recommendations">Рекомендации</NavLink>
           <NavLink to="/analytics">Аналитика</NavLink>
@@ -30,6 +32,7 @@ export default function App() {
           <Route path="/" element={<ProductsPage />} />
           <Route path="/stores" element={<StoresPage />} />
           <Route path="/requests" element={<RequestsPage />} />
+          <Route path="/sales" element={<SalesPage />} />
           <Route path="/forecast" element={<ForecastPage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
