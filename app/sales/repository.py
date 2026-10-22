@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -61,8 +62,6 @@ class SaleRepository:
         sold_to: datetime | None = None,
         status: str = "all",
     ) -> Sequence[tuple[StockEvent, str, str, int | None]]:
-        from datetime import datetime
-
         sale = StockEvent
         reversal = StockEvent.__table__.alias("reversal")
         stmt = (
