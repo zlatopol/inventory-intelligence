@@ -45,15 +45,9 @@ def create_sale(
         sold_at=payload.sold_at,
         idempotency_key=str(idempotency_key),
     )
-    store = service._repo.get_live_store(payload.store_id)
-    product = service._repo.get_live_product(payload.product_id)
+    store_name, product_name = service.get_live_names(payload.store_id, payload.product_id)
     reversal = service._repo.get_reversal_for(event.id)
-    return _read_sale(
-        event,
-        store.name if store else "",
-        product.name if product else "",
-        reversal.id if reversal else None,
-    )
+    return _read_sale(event, store_name, product_name, reversal.id if reversal else None)
 
 
 @router.get("", response_model=list[SaleRead])
