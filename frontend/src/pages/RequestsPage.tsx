@@ -63,6 +63,7 @@ export default function RequestsPage() {
       await api.post("/requests", { store_name: storeName, product_name: productName, quantity });
       setQty("");
       show("Заявка подана");
+      setVisibleCount(10);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка операции");
@@ -89,67 +90,33 @@ export default function RequestsPage() {
   }
 
   const formDisabled = stores.length === 0 || products.length === 0;
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  const sortedRequests = [...(requests ?? [])].sort((a, b) => {
+    // Необработанные заявки ("подана") идут первыми.
+    const aPending = a.status === "подана";
+    const bPending = b.status === "подана";
+
+    if (aPending !== bPending) {
+      return aPending ? -1 : 1;
+    }
+
+    // Внутри каждой группы — от новых к старым.
+    const dateDiff =
+      new Date(b.submitted_at ?? 0).getTime() -
+      new Date(a.submitted_at ?? 0).getTime();
+
+    return dateDiff || b.number - a.number;
+  });
+
+  const visibleRequests = sortedRequests.slice(0, visibleCount);
 
   return (
     <section>
       <h1>Заявки магазинов</h1>
       <p className="page-sub">Подача, обработка и список заявок — FR-8, FR-9, FR-10</p>
       <ErrorBanner message={error} />
-
-      {requests === null ? (
-        <Spinner />
-      ) : (
-        <div className="card">
-          {requests.length === 0 ? (
-            <EmptyState text="Заявок пока нет" />
-          ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>№</th>
-                  <th>Магазин</th>
-                  <th>Товар</th>
-                  <th className="num">Кол-во</th>
-                  <th>Статус</th>
-                  <th>Подана</th>
-                  <th>Обработана</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((r) => {
-                  const badge = requestBadge(r.status);
-                  return (
-                    <tr key={r.number}>
-                      <td>№{r.number}</td>
-                      <td>{r.store_name}</td>
-                      <td>{r.product_name}</td>
-                      <td className="num">{r.requested_quantity}</td>
-                      <td>
-                        <Badge tone={badge.tone}>{badge.label}</Badge>
-                      </td>
-                      <td>{fmt(r.submitted_at)}</td>
-                      <td>{fmt(r.processed_at)}</td>
-                      <td style={{ textAlign: "right" }}>
-                        {r.status === "подана" && (
-                          <button
-                            className="ghost"
-                            disabled={busy}
-                            onClick={() => setProcessing(r)}
-                          >
-                            Обработать
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
+      
       <div className="card">
         <h2 style={{ marginTop: 0 }}>Новая заявка</h2>
         {formDisabled ? (
@@ -212,6 +179,71 @@ export default function RequestsPage() {
           </form>
         )}
       </div>
+      
+      {requests === null ? (
+        <Spinner />
+      ) : (
+        <div className="card">
+          {requests.length === 0 ? (
+            <EmptyState text="Заявок пока нет" />
+          ) : (
+            <>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>№</th>
+                    <th>Магазин</th>
+                    <th>Товар</th>
+                    <th className="num">Кол-во</th>
+                    <th>Статус</th>
+                    <th>Подана</th>
+                    <th>Обработана</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleRequests.map((r) => {
+                    const badge = requestBadge(r.status);
+                    return (
+                      <tr key={r.number}>
+                        <td>№{r.number}</td>
+                        <td>{r.store_name}</td>
+                        <td>{r.product_name}</td>
+                        <td className="num">{r.requested_quantity}</td>
+                        <td>
+                          <Badge tone={badge.tone}>{badge.label}</Badge>
+                        </td>
+                        <td>{fmt(r.submitted_at)}</td>
+                        <td>{fmt(r.processed_at)}</td>
+                        <td style={{ textAlign: "right" }}>
+                          {r.status === "подана" && (
+                            <button
+                              className="ghost"
+                              disabled={busy}
+                              onClick={() => setProcessing(r)}
+                            >
+                              Обработать
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {visibleCount < sortedRequests.length && (
+                <button
+                  className="ghost"
+                  style={{ marginTop: 12 }}
+                  onClick={() => setVisibleCount((count) => count + 10)}
+                >
+                  Показать ещё 10
+                </button>
+              )}
+          </>
+        )}
+        </div>
+      )}
 
       {processing !== null && (
         <ConfirmModal

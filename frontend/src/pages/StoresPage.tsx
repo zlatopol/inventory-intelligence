@@ -11,6 +11,10 @@ import { EmptyState, Spinner } from "../components/states";
  */
 export default function StoresPage() {
   const [stores, setStores] = useState<Store[] | null>(null);
+  const [visibleStores, setVisibleStores] = useState(10);
+  const [visibleProductsByStore, setVisibleProductsByStore] = useState<
+    Record<string, number>
+  >({});
   const [stock, setStock] = useState<StoreStock[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -68,6 +72,8 @@ export default function StoresPage() {
     }
   }
 
+  const visibleStoreList = (stores ?? []).slice(0, visibleStores);
+
   return (
     <section>
       <h1>Магазины</h1>
@@ -84,30 +90,41 @@ export default function StoresPage() {
             {stores.length === 0 ? (
               <EmptyState text="Список магазинов пуст — добавьте первый магазин" />
             ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Название</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {stores.map((s) => (
-                    <tr key={s.id}>
-                      <td>{s.name}</td>
-                      <td style={{ textAlign: "right" }}>
-                        <button
-                          className="danger"
-                          disabled={busy}
-                          onClick={() => setDeleting(s)}
-                        >
-                          Удалить
-                        </button>
-                      </td>
+              <>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Название</th>
+                      <th />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {visibleStoreList.map((s) => (
+                      <tr key={s.id}>
+                        <td>{s.name}</td>
+                        <td style={{ textAlign: "right" }}>
+                          <button
+                            className="danger"
+                            disabled={busy}
+                            onClick={() => setDeleting(s)}
+                          >
+                            Удалить
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {visibleStores < stores.length && (
+                  <button
+                    className="ghost"
+                    style={{ marginTop: 12 }}
+                    onClick={() => setVisibleStores((count) => count + 10)}
+                  >
+                    Показать ещё 10
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -134,7 +151,7 @@ export default function StoresPage() {
           {stock.length === 0 ? (
             <EmptyState text="Магазинов пока нет" />
           ) : (
-            stock.map((s) => (
+            stock.slice(0, visibleStores).map((s) => (
               <div className="card" key={s.name}>
                 <h2 style={{ margin: "0 0 8px" }}>{s.name}</h2>
                 {s.products.length === 0 ? (
@@ -142,22 +159,40 @@ export default function StoresPage() {
                     (нет товаров)
                   </p>
                 ) : (
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Товар</th>
-                        <th className="num">Количество, шт.</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {s.products.map((p) => (
-                        <tr key={p.name}>
-                          <td>{p.name}</td>
-                          <td className="num">{p.quantity}</td>
+                  <>
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Товар</th>
+                          <th className="num">Количество, шт.</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {s.products
+                          .slice(0, visibleProductsByStore[s.name] ?? 10)
+                          .map((p) => (
+                          <tr key={p.name}>
+                            <td>{p.name}</td>
+                            <td className="num">{p.quantity}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {(visibleProductsByStore[s.name] ?? 10) < s.products.length && (
+                      <button
+                        className="ghost"
+                        style={{ marginTop: 12 }}
+                        onClick={() =>
+                          setVisibleProductsByStore((current) => ({
+                            ...current,
+                            [s.name]: (current[s.name] ?? 10) + 10,
+                          }))
+                        }
+                      >
+                        Показать ещё 10
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             ))

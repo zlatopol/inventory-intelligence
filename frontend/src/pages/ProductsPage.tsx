@@ -14,6 +14,7 @@ import { EmptyState, Spinner } from "../components/states";
  */
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
+  const [visibleCount, setVisibleCount] = useState(10);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState("");
@@ -40,6 +41,7 @@ export default function ProductsPage() {
     setError(null);
     try {
       await api.post("/products", { name }); // сырой ввод: правила решает сервис
+      setVisibleCount(10);
       setName("");
       show("Товар добавлен в складской список");
       await load();
@@ -89,6 +91,7 @@ export default function ProductsPage() {
     }
   }
 
+  const visibleProducts = (products ?? []).slice(0, visibleCount);
   return (
     <section>
       <h1>Склад</h1>
@@ -101,39 +104,6 @@ export default function ProductsPage() {
         <Spinner />
       ) : (
         <>
-          <div className="card">
-            {products.length === 0 ? (
-              <EmptyState text="Склад пуст — добавьте первый товар" />
-            ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Название</th>
-                    <th className="num">Количество, шт.</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.name}</td>
-                      <td className="num">{p.warehouse_quantity}</td>
-                      <td style={{ textAlign: "right" }}>
-                        <button
-                          className="danger"
-                          disabled={busy}
-                          onClick={() => setDeleting(p)}
-                        >
-                          Удалить
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-
           <div className="card">
             <h2 style={{ marginTop: 0 }}>Новый товар</h2>
             <form className="inline" onSubmit={submitAdd}>
@@ -197,6 +167,52 @@ export default function ProductsPage() {
               </form>
             )}
           </div>
+
+
+          <div className="card">
+            {products.length === 0 ? (
+              <EmptyState text="Склад пуст — добавьте первый товар" />
+            ) : (
+              <>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Название</th>
+                      <th className="num">Количество, шт.</th>
+                      <th />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleProducts.map((p) => (
+                      <tr key={p.id}>
+                        <td>{p.name}</td>
+                        <td className="num">{p.warehouse_quantity}</td>
+                        <td style={{ textAlign: "right" }}>
+                          <button
+                            className="danger"
+                            disabled={busy}
+                            onClick={() => setDeleting(p)}
+                          >
+                            Удалить
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {visibleCount < products.length && (
+                  <button
+                    className="ghost"
+                    style={{ marginTop: 12 }}
+                    onClick={() => setVisibleCount((count) => count + 10)}
+                  >
+                    Показать ещё 10
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
         </>
       )}
 
