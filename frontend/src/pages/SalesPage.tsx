@@ -56,13 +56,22 @@ export default function SalesPage() {
   const selectedProduct = saleProducts.find((p) => p.product_id === Number(productId));
   const availableStock = selectedProduct?.quantity ?? 0;
 
+  const refreshSaleProducts = useCallback(async (targetStoreId: string = storeId) => {
+    if (!targetStoreId) {
+      setSaleProducts([]);
+      return;
+    }
+    const items = await api.get<SaleProductOption[]>(`/sales/products?store_id=${targetStoreId}`);
+    setSaleProducts(items);
+  }, [storeId]);
+
   useEffect(() => {
     setProductId("");
+    let cancelled = false;
     if (!storeId) {
       setSaleProducts([]);
       return;
     }
-    let cancelled = false;
     api.get<SaleProductOption[]>(`/sales/products?store_id=${storeId}`)
       .then((items) => { if (!cancelled) setSaleProducts(items); })
       .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : "Не удалось загрузить остатки магазина"); });
@@ -92,10 +101,10 @@ export default function SalesPage() {
       setProductId("");
       setSoldAt(localDateTimeValue());
       show("Продажа зарегистрирована");
-      await load();
+      await Promise.all([load(), refreshSaleProducts()]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Не удалось зарегистрировать продажу");
-      await load();
+      await Promise.all([load(), refreshSaleProducts()]);
     } finally {
       setBusy(false);
     }
@@ -110,10 +119,10 @@ export default function SalesPage() {
     try {
       await api.post(`/sales/${target.id}/reverse`);
       show("Продажа отменена, товар возвращён в остаток");
-      await load();
+      await Promise.all([load(), refreshSaleProducts()]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Не удалось отменить продажу");
-      await load();
+      await Promise.all([load(), refreshSaleProducts()]);
     } finally {
       setBusy(false);
     }
