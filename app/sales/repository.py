@@ -34,6 +34,14 @@ class SaleRepository:
         )
         return self._session.scalars(stmt).first()
 
+    def delete_stock(self, stock: StoreProduct) -> None:
+        self._session.delete(stock)
+
+    def add_stock(self, store_id: int, product_id: int, quantity: int) -> StoreProduct:
+        stock = StoreProduct(store_id=store_id, product_id=product_id, quantity=quantity)
+        self._session.add(stock)
+        return stock
+
     def get_event(self, event_id: int) -> StockEvent | None:
         return self._session.get(StockEvent, event_id)
 
