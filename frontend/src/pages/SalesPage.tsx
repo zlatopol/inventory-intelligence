@@ -119,7 +119,7 @@ export default function SalesPage() {
     if (filterProduct) params.set("product_id", filterProduct);
     if (filterStatus !== "all") params.set("status", filterStatus);
     if (from) params.set("sold_from", new Date(from).toISOString());
-    if (to) params.set("sold_to", new Date(to).toISOString());
+    if (to) params.set("sold_to", new Date(`${to}T23:59:59.999`).toISOString());
     setError(null);
     try {
       setSales(await api.get<Sale[]>(`/sales${params.size ? `?${params.toString()}` : ""}`));
