@@ -37,7 +37,7 @@ def test_sale_decreases_stock_and_is_written_to_event_history(db_session):
         store.id, product.id, 2, sold_at, "test-sale-key-1"
     )
 
-    assert db_session.get(StoreProduct, (store.id, product.id)) is None
+    assert db_session.get(StoreProduct, (store.id, product.id)).quantity == 3
     assert event.event_type == "sale"
     assert event.sold_at == sold_at
     assert event.created_at is not None
