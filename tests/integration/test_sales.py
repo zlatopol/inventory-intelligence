@@ -8,6 +8,7 @@ from app.products.models import Product
 from app.requests.models import StoreProduct
 from app.sales.repository import SaleRepository
 from app.sales.service import SaleService
+from app.stores.models import Store
 from app.shared.errors import (
     InsufficientStoreStockError,
     SaleAlreadyReversedError,
