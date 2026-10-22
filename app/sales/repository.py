@@ -21,10 +21,19 @@ class SaleRepository:
             select(Store).where(Store.id == store_id, Store.deleted_at.is_(None))
         ).first()
 
-    def get_live_product(self, product_id: int) -> Product | None:
-        return self._session.scalars(
-            select(Product).where(Product.id == product_id, Product.deleted_at.is_(None))
-        ).first()
+    def get_product(self, product_id: int) -> Product | None:
+        # A product can be delisted from the warehouse while stores still hold
+        # stock. Sales must preserve access to that product until store stock is gone.
+        return self._session.get(Product, product_id)
+
+    def list_store_sale_products(self, store_id: int) -> Sequence[tuple[Product, int]]:
+        stmt = (
+            select(Product, StoreProduct.quantity)
+            .join(StoreProduct, StoreProduct.product_id == Product.id)
+            .where(StoreProduct.store_id == store_id, StoreProduct.quantity > 0)
+            .order_by(Product.name)
+        )
+        return self._session.execute(stmt).all()
 
     def get_stock_for_update(self, store_id: int, product_id: int) -> StoreProduct | None:
         stmt = (

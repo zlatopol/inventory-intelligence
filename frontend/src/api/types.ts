@@ -96,3 +96,9 @@ export interface RetrainResult {
   status: string;
   trained_at: string;
 }
+
+export interface SaleProductOption {
+  product_id: number;
+  product_name: string;
+  quantity: number;
+}
