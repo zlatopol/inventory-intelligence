@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -67,6 +67,8 @@ class SaleService:
             idempotency_key=idempotency_key,
         )
         stock.quantity -= quantity
+        if stock.quantity == 0:
+            self._repo.delete_stock(stock)
         self._repo.add_event(event)
         try:
             self._session.commit()
@@ -86,9 +88,6 @@ class SaleService:
             raise SaleAlreadyReversedError()
 
         stock = self._repo.get_stock_for_update(sale.store_id, sale.product_id)
-        if stock is None:
-            # A valid sale implies a stock row existed; never silently create stock.
-            raise InsufficientStoreStockError()
 
         reversal = StockEvent(
             event_type="sale_reversal",
@@ -99,7 +98,10 @@ class SaleService:
             reversal_of_event_id=sale.id,
             sold_at=None,
         )
-        stock.quantity += sale.quantity
+        if stock is None:
+            stock = self._repo.add_stock(sale.store_id, sale.product_id, sale.quantity)
+        else:
+            stock.quantity += sale.quantity
         self._repo.add_event(reversal)
         try:
             self._session.commit()
