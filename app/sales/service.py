@@ -49,7 +49,7 @@ class SaleService:
         store = self._repo.get_live_store(store_id)
         if store is None:
             raise StoreNotFoundError()
-        product = self._repo.get_live_product(product_id)
+        product = self._repo.get_product(product_id)
         if product is None:
             raise ProductNotFoundError()
 
@@ -126,8 +126,14 @@ class SaleService:
 
     def get_live_names(self, store_id: int, product_id: int) -> tuple[str, str]:
         store = self._repo.get_live_store(store_id)
-        product = self._repo.get_live_product(product_id)
+        product = self._repo.get_product(product_id)
         return (store.name if store else "", product.name if product else "")
+
+    def list_store_sale_products(self, store_id: int):
+        store = self._repo.get_live_store(store_id)
+        if store is None:
+            raise StoreNotFoundError()
+        return self._repo.list_store_sale_products(store_id)
 
     def list_sales(self, **filters):
         return self._repo.list_sales(**filters)
