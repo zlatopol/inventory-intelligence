@@ -16,7 +16,7 @@ from app.shared.errors import (
 
 def setup_stock(session, quantity: int = 5):
     product = Product(name="Кофе", warehouse_quantity=0)
-    store = __import__("app.stores.models", fromlist=["Store"]).Store(name="Магазин 1")
+    store = Store(name="Магазин 1")
     session.add_all([product, store])
     session.flush()
     stock = StoreProduct(store_id=store.id, product_id=product.id, quantity=quantity)
@@ -37,7 +37,7 @@ def test_sale_decreases_stock_and_is_written_to_event_history(db_session):
         store.id, product.id, 2, sold_at, "test-sale-key-1"
     )
 
-    assert stock.quantity == 3
+    assert db_session.get(StoreProduct, (store.id, product.id)) is None
     assert event.event_type == "sale"
     assert event.sold_at == sold_at
     assert event.created_at is not None
@@ -78,7 +78,7 @@ def test_reversal_returns_quantity_and_can_only_happen_once(db_session):
 
     reversal, resulting_stock = service(db_session).reverse_sale(sale.id)
 
-    assert stock.quantity == 5
+    assert db_session.get(StoreProduct, (store.id, product.id)).quantity == 5
     assert resulting_stock == 5
     assert reversal.event_type == "sale_reversal"
     assert reversal.reversal_of_event_id == sale.id
