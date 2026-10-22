@@ -1,10 +1,10 @@
 # Project Status
 
-Last updated: 2026-10-21
+Last updated: 2026-10-22
 
 ## Current phase
 
-**Phase 4 — Web UI (EX-3)** (wrap-up: steps 0–13 done, осталась ретроспектива).
+**Phase 4 — Web UI (EX-3): COMPLETE (2026-10-22).** Steps 0–13 done; UI polish, screenshots, and retrospective recorded below.
 
 **Phase 3 — Model as a service: COMPLETE** (forecast/retrain API, CLI 12,
 holiday features, blocked horizon evaluation, replenishment EX-2 — записи ниже;
@@ -719,14 +719,73 @@ re-fetch после мутаций, полный UI всех 11 операций
 - **13**: README — галерея скриншотов `docs/img/ui-*.png`, dev-режим фронтенда
   (порт 5173, proxy /api), полный стек одной командой.
 
-Осталось: ретроспектива Phase 4 (+ менторский долг — разбор концепций
-React/props/state/effect, Vite proxy, TS-типы — если ещё не отдан).
+### UI polish and documentation follow-up (2026-10-22)
+
+After steps 0–13, the following follow-up commits polished the UI and aligned
+the README screenshots with the current layout:
+
+- [`ce8b692`](https://github.com/zlatopol/inventory-intelligence/commit/ce8b69274b8f34b76ac5598829416229f0ef3ac5): adjusted sidebar spacing.
+- [`d497b85`](https://github.com/zlatopol/inventory-intelligence/commit/d497b8534ffc80e6b8d99d33b668a1577de0234c): added progressive list pagination, prioritized pending requests, and placed forms before tables.
+- [`cebfadc`](https://github.com/zlatopol/inventory-intelligence/commit/cebfadc06babbac81ba3bfc19e223af55ca64704): refreshed UI screenshots for the forms-first layout and list pagination.
+- [`4707ba3`](https://github.com/zlatopol/inventory-intelligence/commit/4707ba3dd7a6ee3d1040f171a6b030902de36dcc): updated the UI screenshots again.
+
+Developer-reported validation: tests pass locally and the checks triggered when
+changes are pushed to Git are successful. Tests were not rerun while preparing
+this status update.
+
+### Phase 4 retrospective
+
+#### What went well
+
+1. **Iterative UI refinement.** After the core flows were implemented, layout and
+   list behavior could be improved in focused follow-up changes.
+2. **Work-oriented request ordering.** Pending requests appear first, making
+   records requiring action easier to find.
+3. **Progressive list display.** The “Show more” pattern reduces the initial
+   visual load on long lists while keeping additional records accessible.
+4. **Documentation alignment.** Screenshots were refreshed to reflect the
+   current interface rather than an earlier layout.
+5. **Validation workflow.** Local tests and Git-triggered checks provide
+   repeatable feedback when changes are introduced.
+
+#### What to improve
+
+1. **Keep implementation and documentation synchronized.** Update the status
+   log and screenshots as part of the same task as substantial UI changes.
+2. **Standardize list behavior.** Reuse consistent conventions for sorting,
+   initial visible counts, and progressive expansion across pages.
+3. **Check shared styles across screens.** CSS changes can affect pages beyond
+   the one being actively edited; regression checks should cover shared layouts.
+4. **Use a completion checklist.** Before closing a phase, verify functionality,
+   tests, CI, screenshots, and project documentation together.
+
+#### Conclusion
+
+Phase 4 is complete. The October 22 follow-up commits are UI polish and
+documentation alignment, not a new development phase. The frontend now has the
+six documented screens, the agreed operations, analytical views, and refreshed
+screenshots.
+
+The next functional increment is manual sales registration with transactional
+store-stock deduction and a sale event in stock history. Treat it as a separate
+feature covering database migration, business logic, API, frontend, and tests.
+
+Suggested acceptance criteria for sales registration:
+
+- Store stock never becomes negative.
+- Sale creation and stock deduction are atomic.
+- Each accepted sale is recorded in stock-event history.
+- Retries cannot cause duplicate deductions.
+- Failures do not leave a partially applied sale.
+- API and UI behavior are covered by tests.
+- Documentation reflects the implemented behavior.
 
 ## Next step
 
-1. Phase 4 retrospective (R1–R3) и закрытие документации;
-2. Parked: hyperparameters (R3), scheduled retraining, MLflow server,
-   forecast monitoring.
+1. Implement manual sales registration and atomic store-stock deduction.
+2. Record the sales event in stock history and expose it through the API/UI.
+3. Keep parked ML follow-ups separate: hyperparameters (R3), scheduled
+   retraining, MLflow server, and forecast monitoring.
 
 ## Repository notes
 
