@@ -5,12 +5,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, Query
 from sqlalchemy.orm import Session
 
-from app.products.models import Product
 from app.sales.repository import SaleRepository
 from app.sales.schemas import SaleCreate, SaleRead, SaleReversalRead
 from app.sales.service import SaleService
 from app.shared.db import get_session
-from app.stores.models import Store
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -47,7 +45,15 @@ def create_sale(
         sold_at=payload.sold_at,
         idempotency_key=str(idempotency_key),
     )
-    return _read_sale(event, "", "", None)
+    store = service._repo.get_live_store(payload.store_id)
+    product = service._repo.get_live_product(payload.product_id)
+    reversal = service._repo.get_reversal_for(event.id)
+    return _read_sale(
+        event,
+        store.name if store else "",
+        product.name if product else "",
+        reversal.id if reversal else None,
+    )
 
 
 @router.get("", response_model=list[SaleRead])
