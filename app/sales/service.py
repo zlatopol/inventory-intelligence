@@ -76,7 +76,15 @@ class SaleService:
             self._session.rollback()
             previous = self._repo.get_by_idempotency_key(idempotency_key)
             if previous is not None:
-                return previous
+                if (
+                    previous.event_type == "sale"
+                    and previous.store_id == store_id
+                    and previous.product_id == product_id
+                    and previous.quantity == quantity
+                    and previous.sold_at == sold_at
+                ):
+                    return previous
+                raise IdempotencyConflictError()
             raise
         return event
 
